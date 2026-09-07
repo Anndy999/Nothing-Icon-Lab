@@ -25,8 +25,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.anndy999.nothingiconlab.R
 import com.anndy999.nothingiconlab.ui.LabViewModel
 import com.anndy999.nothingiconlab.ui.components.BitmapIcon
 
@@ -44,14 +46,14 @@ fun AppDetailScreen(viewModel: LabViewModel) {
                 title = { Text(app.label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = {
                     IconButton(onClick = { viewModel.select(null) }) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { viewModel.toggleBad(app) }) {
                         Icon(
                             Icons.Outlined.Flag,
-                            contentDescription = "Mark as bad",
+                            contentDescription = stringResource(R.string.mark_bad),
                             tint = if (bad) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface,
                         )
                     }
@@ -72,27 +74,33 @@ fun AppDetailScreen(viewModel: LabViewModel) {
                 size = 128.dp,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
-            Text(result?.source?.longLabel ?: "Rendering...", style = MaterialTheme.typography.titleMedium)
-            Meta("packageName", app.packageName)
-            Meta("launcher Activity", app.activityName)
-            Meta("ComponentName", app.componentFlattened)
+            Text(
+                result?.source?.let { stringResource(it.longLabelRes) } ?: stringResource(R.string.rendering),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Meta(stringResource(R.string.meta_package), app.packageName)
+            Meta(stringResource(R.string.meta_activity), app.activityName)
+            Meta(stringResource(R.string.meta_component), app.componentFlattened)
             if (result != null) {
-                Meta("alpha range", "${result.alphaMin}..${result.alphaMax}")
-                Meta("invert", result.inverted.toString())
+                Meta(stringResource(R.string.meta_alpha), "${result.alphaMin}..${result.alphaMax}")
+                Meta(
+                    stringResource(R.string.meta_invert),
+                    stringResource(if (result.inverted) R.string.yes else R.string.no),
+                )
             }
 
-            Text("Layers", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.layers), style = MaterialTheme.typography.titleMedium)
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Layer("Original", result?.layers?.originalBitmap)
-                Layer("Foreground", result?.layers?.foregroundBitmap)
-                Layer("Background", result?.layers?.backgroundBitmap)
-                Layer("Monochrome", result?.layers?.nativeMonochromeBitmap)
-                Layer("Forced Mono", result?.forcedMono)
-                Layer("Nothing Result", result?.nothingResult)
+                Layer(stringResource(R.string.layer_original), result?.layers?.originalBitmap)
+                Layer(stringResource(R.string.layer_foreground), result?.layers?.foregroundBitmap)
+                Layer(stringResource(R.string.layer_background), result?.layers?.backgroundBitmap)
+                Layer(stringResource(R.string.layer_monochrome), result?.layers?.nativeMonochromeBitmap)
+                Layer(stringResource(R.string.layer_forced), result?.forcedMono)
+                Layer(stringResource(R.string.layer_result), result?.nothingResult)
             }
 
             ParamsScreen(viewModel = viewModel, modifier = Modifier.fillMaxWidth(), scrollable = false)

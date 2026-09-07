@@ -21,10 +21,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.anndy999.nothingiconlab.R
 import com.anndy999.nothingiconlab.ui.LabViewModel
 import com.anndy999.nothingiconlab.ui.components.BitmapIcon
 import com.anndy999.nothingiconlab.ui.components.FilterRow
@@ -37,7 +39,7 @@ fun GridScreen(viewModel: LabViewModel, modifier: Modifier = Modifier) {
     if (state.loading) {
         Column(modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             CircularProgressIndicator()
-            Text("Scanning launchable apps...", modifier = Modifier.padding(top = 12.dp))
+            Text(stringResource(R.string.scanning), modifier = Modifier.padding(top = 12.dp))
         }
         return
     }
@@ -56,11 +58,11 @@ fun GridScreen(viewModel: LabViewModel, modifier: Modifier = Modifier) {
                     onValueChange = viewModel::setQuery,
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    label = { Text("Search name / package / activity") },
+                    label = { Text(stringResource(R.string.search_hint)) },
                 )
                 FilterRow(selected = state.filter, onSelect = viewModel::setFilter)
                 Text(
-                    "${apps.size} apps / ${state.apps.size} scanned",
+                    stringResource(R.string.apps_scanned, apps.size, state.apps.size),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 8.dp),
@@ -88,7 +90,7 @@ fun GridScreen(viewModel: LabViewModel, modifier: Modifier = Modifier) {
                     modifier = Modifier.padding(top = 4.dp),
                 )
                 Text(
-                    preview?.source?.shortLabel ?: "...",
+                    preview?.source?.let { stringResource(it.shortLabelRes) } ?: "…",
                     fontSize = 10.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

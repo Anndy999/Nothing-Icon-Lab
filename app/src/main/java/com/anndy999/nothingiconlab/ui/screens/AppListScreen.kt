@@ -18,8 +18,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.anndy999.nothingiconlab.R
 import com.anndy999.nothingiconlab.ui.LabViewModel
 import com.anndy999.nothingiconlab.ui.components.BitmapIcon
 import com.anndy999.nothingiconlab.ui.components.FilterRow
@@ -39,7 +41,7 @@ fun AppListScreen(viewModel: LabViewModel, modifier: Modifier = Modifier) {
                 onValueChange = viewModel::setQuery,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                label = { Text("Search") },
+                label = { Text(stringResource(R.string.search_short)) },
             )
             FilterRow(selected = state.filter, onSelect = viewModel::setFilter)
         }
@@ -63,7 +65,7 @@ fun AppListScreen(viewModel: LabViewModel, modifier: Modifier = Modifier) {
                     Text(app.packageName, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(app.activityName.substringAfterLast('.'), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
                     Text(
-                        preview?.source?.longLabel ?: "Rendering...",
+                        preview?.source?.let { stringResource(it.longLabelRes) } ?: stringResource(R.string.rendering),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.secondary,
                     )
