@@ -22,15 +22,18 @@ object BitmapUtils {
     }
 
     /**
-     * AOSP ClippedMonoDrawable: negative inset extra/(1+2*extra) so the
-     * adaptive-padded mono fills the circle, then clip to a circle.
+     * Nothing / AOSP ClippedMonoDrawable in Launcher 2.5.9:
+     * `new ClippedMonoDrawable(mono, -AdaptiveIconDrawable.getExtraInsetFraction())`
+     * which is `InsetDrawable(mono, -0.25)` then clip to the adaptive icon mask.
+     *
+     * n3/a.a = extra/(1+2*extra)=1/6 is a *different* wrap-path inset used by
+     * n3/a.b, not the ClippedMonoDrawable constructor argument.
      */
     fun rasterizeClippedMono(drawable: Drawable, size: Int, extraInset: Float): Bitmap {
         val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
         val extra = extraInset.coerceIn(0f, 0.45f)
-        val inset = if (extra <= 0f) 0f else extra / (1f + 2f * extra)
-        val pad = (-inset * size).roundToInt()
+        val pad = (-extra * size).roundToInt()
         drawable.setBounds(pad, pad, size - pad, size - pad)
         val path = Path().apply {
             addCircle(size / 2f, size / 2f, size / 2f, Path.Direction.CW)
@@ -50,10 +53,19 @@ object BitmapUtils {
         if (extra <= 0f) return drawableToBitmap(drawable, size)
         val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
-        val pad = (-(extra / (1f + 2f * extra)) * size).roundToInt()
+        val pad = (-extra * size).roundToInt()
         drawable.setBounds(pad, pad, size - pad, size - pad)
         drawable.draw(canvas)
         return bmp
+    }
+
+    /**
+     * IconGrayConverter o3/a.l: content Rect of opaque pixels, then square-pad.
+     * Used only on the forced-mono path, not as a global cropToContent default.
+     */
+    fun cropToContentSquare(bitmap: Bitmap, alphaCut: Int = 0): Bitmap {
+        val bounds = contentBounds(bitmap, alphaCut)
+        return squarePad(crop(bitmap, bounds))
     }
 
     fun copy(src: Bitmap): Bitmap = src.copy(src.config ?: Bitmap.Config.ARGB_8888, true)

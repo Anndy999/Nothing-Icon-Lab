@@ -46,7 +46,7 @@ object IconPipeline {
         )
         val glyph = when (source) {
             IconSource.NATIVE_MONO -> rasterizeNative(layers.nativeMonochrome, outputSize, params)
-            IconSource.FORCED_MONO -> forced?.bitmap
+            IconSource.FORCED_MONO -> forced?.bitmap?.let { prepareForcedGlyph(it, params) }
             IconSource.FALLBACK -> fallbackGlyph(layers, outputSize)
         }
         val (bg, fg) = NothingColors.resolve(context, params, dark)
@@ -94,6 +94,18 @@ object IconPipeline {
     ): Bitmap? {
         if (drawable == null) return null
         return BitmapUtils.rasterizeClippedMono(drawable, size, params.adaptiveIconInset)
+    }
+
+    /**
+     * Forced path matches IconGrayConverter o3/a.m: content Rect then scale.
+     * Scale itself is applied later by [NothingRenderer] as logoScale 0.3888889
+     * (ThemedIconDrawable draws mMonoIcon full-bleed; the 0.3888889 is already
+     * in that bitmap on device, which we reconstruct at compose time).
+     */
+    private fun prepareForcedGlyph(bitmap: Bitmap, params: NothingRenderParams): Bitmap {
+        if (params.cropToContent) return bitmap
+        val alphaCut = (params.alphaThreshold.coerceIn(0f, 1f) * 255f).toInt()
+        return BitmapUtils.cropToContentSquare(bitmap, alphaCut)
     }
 
     private fun fallbackGlyph(layers: AppIconLayers, size: Int): Bitmap? {
