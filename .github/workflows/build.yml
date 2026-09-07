@@ -7,18 +7,22 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-
-permissions:
-  contents: write
+    inputs:
+      release_tag:
+        description: "If set, also create a GitHub Release with this tag (e.g. v0.1.1)"
+        required: false
+        default: ""
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      ANDROID_HOME: ${{ github.workspace }}/.android-sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -41,24 +45,23 @@ jobs:
           fi
           chmod +x gradlew
 
+      - name: Grant execute on gradlew
+        run: chmod +x gradlew
+
       - name: Unit tests
         run: ./gradlew --no-daemon testDebugUnitTest
 
       - name: Lint
         run: ./gradlew --no-daemon lintDebug
 
-      - name: Decode release keystore if provided
+      - name: Decode release keystore
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
-            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$GITHUB_WORKSPACE/release.keystore"
-            echo "ANDROID_KEYSTORE_FILE=$GITHUB_WORKSPACE/release.keystore" >> "$GITHUB_ENV"
-            echo "HAS_RELEASE_SIGNING=true" >> "$GITHUB_ENV"
-          else
-            echo "HAS_RELEASE_SIGNING=false" >> "$GITHUB_ENV"
-            echo "No ANDROID_KEYSTORE_BASE64 secret; APK will be debug-signed."
-          fi
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$GITHUB_WORKSPACE/release.keystore"
+          echo "ANDROID_KEYSTORE_FILE=$GITHUB_WORKSPACE/release.keystore" >> "$GITHUB_ENV"
+          echo "HAS_RELEASE_SIGNING=true" >> "$GITHUB_ENV"
 
       - name: Build release APK
         env:
@@ -76,7 +79,15 @@ jobs:
           if [[ "$TAG_NAME" == v* ]]; then
             VER="${TAG_NAME#v}"
           else
-            VER="0.1.0"
+            VER=$(python3 - <<'PY'
+          import re
+          text = open("app/build.gradle.kts", encoding="utf-8").read()
+          major = int(re.search(r"versionMajor\s*=\s*(\d+)", text).group(1))
+          minor = int(re.search(r"versionMinor\s*=\s*(\d+)", text).group(1))
+          patch = int(re.search(r"versionPatch\s*=\s*(\d+)", text).group(1))
+          print(f"{major}.{minor}.{patch}")
+          PY
+          )
           fi
           NAME="Nothing-Icon-Lab-v${VER}.apk"
           cp "$SRC" "dist/$NAME"
@@ -96,43 +107,28 @@ jobs:
           name: ${{ steps.apk.outputs.apk_name }}
           path: ${{ steps.apk.outputs.apk_path }}
 
-      - name: Create v0.1.0 tag from main if missing
-        if: github.ref == 'refs/heads/main'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git fetch --tags origin || true
-          if git ls-remote --tags origin | grep -q 'refs/tags/v0.1.0$'; then
-            echo "v0.1.0 already exists"
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git tag v0.1.0
-            git push origin v0.1.0
-          fi
-
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.release_tag != ''
         uses: softprops/action-gh-release@v2
         with:
-          name: Nothing Icon Lab ${{ github.ref_name }}
+          tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
+          name: Nothing Icon Lab ${{ github.event.inputs.release_tag || github.ref_name }}
           generate_release_notes: true
           files: ${{ steps.apk.outputs.apk_path }}
           body: |
-            ## Nothing Icon Lab ${{ github.ref_name }}
+            ## Nothing Icon Lab ${{ github.event.inputs.release_tag || github.ref_name }}
 
             See CHANGELOG.md for Added / Changed / Fixed / Known Issues.
 
             **APK:** `${{ steps.apk.outputs.apk_name }}`
             **Signing:** `${{ steps.apk.outputs.signing }}`
 
-            If signing is `debug-fallback`, GitHub Secrets for the release keystore are not configured yet.
-            This APK is **not** a stable release signature.
+            If signing is `debug-fallback`, GitHub Secrets for the release keystore are not configured yet. This APK is **not** a stable release signature.
 
-            Required secrets:
-            - ANDROID_KEYSTORE_BASE64
-            - ANDROID_KEYSTORE_PASSWORD
-            - ANDROID_KEY_ALIAS
-            - ANDROID_KEY_PASSWORD
+            Required secrets for stable signing:
+            - `ANDROID_KEYSTORE_BASE64`
+            - `ANDROID_KEYSTORE_PASSWORD`
+            - `ANDROID_KEY_ALIAS`
+            - `ANDROID_KEY_PASSWORD`
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
