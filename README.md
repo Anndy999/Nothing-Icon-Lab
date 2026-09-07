@@ -22,11 +22,11 @@ Theme Park 的循环太慢：
 5. 实时调参，网格立刻更新
 6. 导出面向 Theme Park 的测试包（`appfilter.xml` + PNG）
 
-视觉参考是 **Nothing Launcher 2.5.9**，不是 Lawnicons。Lawnicons 只当基础设施（扫描 / Adaptive Icon / appfilter 思路）。
+默认视觉是 **白底黑标**（Nada 无题已适配图标的字形占比，颜色取反）。参数页可切回黑底白标，也可还原 Nothing Launcher 2.5.9 常量。Lawnicons 只当基础设施（扫描 / Adaptive Icon / appfilter 思路）。
 
 ## 当前状态
 
-**v0.1.1** — 中文界面；`logoScale` 与系统中性色已按 Launcher 2.5.9 字节码核实；启动器图标已重做。
+**v0.1.2** — 默认白底黑标（圆形 `#F1F1F1` 底板 + `#1B1B1B` 字形，字形约占 0.37）；中文界面。
 
 | 功能 | 状态 |
 | --- | --- |
@@ -122,7 +122,7 @@ APK 在 `app/build/outputs/apk/`。
 - 优先 AOSP / Apache 2.0 / Lawnicons 基础设施。不要复制 Nothing 闭源。
 - 架构保持小、可调试。记录 `IconSource` 和渲染参数。
 - 不 root、不改 One UI Home、不改 Theme Park。
-- 不把 Nothing 专有 APK 提交进仓库。
+- 不把 Nothing / Nada 专有 APK 提交进仓库。
 
 ## License
 
