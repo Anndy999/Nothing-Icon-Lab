@@ -6,12 +6,14 @@ on:
     tags: ["v*"]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,14 +47,18 @@ jobs:
       - name: Lint
         run: ./gradlew --no-daemon lintDebug
 
-      - name: Decode release keystore
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      - name: Decode release keystore if provided
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$GITHUB_WORKSPACE/release.keystore"
-          echo "ANDROID_KEYSTORE_FILE=$GITHUB_WORKSPACE/release.keystore" >> "$GITHUB_ENV"
-          echo "HAS_RELEASE_SIGNING=true" >> "$GITHUB_ENV"
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$GITHUB_WORKSPACE/release.keystore"
+            echo "ANDROID_KEYSTORE_FILE=$GITHUB_WORKSPACE/release.keystore" >> "$GITHUB_ENV"
+            echo "HAS_RELEASE_SIGNING=true" >> "$GITHUB_ENV"
+          else
+            echo "HAS_RELEASE_SIGNING=false" >> "$GITHUB_ENV"
+            echo "No ANDROID_KEYSTORE_BASE64 secret; APK will be debug-signed."
+          fi
 
       - name: Build release APK
         env:
@@ -123,10 +129,10 @@ jobs:
             If signing is `debug-fallback`, GitHub Secrets for the release keystore are not configured yet.
             This APK is **not** a stable release signature.
 
-            Required secrets for stable signing:
-            - `ANDROID_KEYSTORE_BASE64`
-            - `ANDROID_KEYSTORE_PASSWORD`
-            - `ANDROID_KEY_ALIAS`
-            - `ANDROID_KEY_PASSWORD`
+            Required secrets:
+            - ANDROID_KEYSTORE_BASE64
+            - ANDROID_KEYSTORE_PASSWORD
+            - ANDROID_KEY_ALIAS
+            - ANDROID_KEY_PASSWORD
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
