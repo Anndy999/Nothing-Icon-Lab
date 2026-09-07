@@ -6,19 +6,14 @@ data class AppFilterItem(
     val drawable: String,
 ) {
     val componentInfo: String
-        get() = "ComponentInfo{$packageName/$activityName}"
+        get() = "ComponentInfo{" + packageName + "/" + activityName + "}"
 }
 
 object AppFilterXml {
     fun document(items: List<AppFilterItem>): String {
         val body = items.joinToString("\n") { item ->
-            """    <item component=\"${item.componentInfo}\" drawable=\"${item.drawable}\" />"""
+            "    <item component=\"" + item.componentInfo + "\" drawable=\"" + item.drawable + "\" />"
         }
-        return buildString {
-            appendLine("""<?xml version=\"1.0\" encoding=\"utf-8\"?>""")
-            appendLine("<resources>")
-            appendLine(body)
-            appendLine("</resources>")
-        }
+        return "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n" + body + "\n</resources>\n"
     }
 }
