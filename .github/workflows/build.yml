@@ -55,13 +55,16 @@ jobs:
         run: ./gradlew --no-daemon lintDebug
 
       - name: Decode release keystore
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$GITHUB_WORKSPACE/release.keystore"
-          echo "ANDROID_KEYSTORE_FILE=$GITHUB_WORKSPACE/release.keystore" >> "$GITHUB_ENV"
-          echo "HAS_RELEASE_SIGNING=true" >> "$GITHUB_ENV"
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$GITHUB_WORKSPACE/release.keystore"
+            echo "ANDROID_KEYSTORE_FILE=$GITHUB_WORKSPACE/release.keystore" >> "$GITHUB_ENV"
+            echo "HAS_RELEASE_SIGNING=true" >> "$GITHUB_ENV"
+          else
+            echo "HAS_RELEASE_SIGNING=false" >> "$GITHUB_ENV"
+          fi
 
       - name: Build release APK
         env:
