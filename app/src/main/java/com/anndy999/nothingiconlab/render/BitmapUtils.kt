@@ -4,7 +4,9 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.Rect
+import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
 import kotlin.math.max
 import kotlin.math.min
@@ -15,6 +17,41 @@ object BitmapUtils {
         val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
         drawable.setBounds(0, 0, size, size)
+        drawable.draw(canvas)
+        return bmp
+    }
+
+    /**
+     * AOSP ClippedMonoDrawable: negative inset extra/(1+2*extra) so the
+     * adaptive-padded mono fills the circle, then clip to a circle.
+     */
+    fun rasterizeClippedMono(drawable: Drawable, size: Int, extraInset: Float): Bitmap {
+        val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bmp)
+        val extra = extraInset.coerceIn(0f, 0.45f)
+        val inset = if (extra <= 0f) 0f else extra / (1f + 2f * extra)
+        val pad = (-inset * size).roundToInt()
+        drawable.setBounds(pad, pad, size - pad, size - pad)
+        val path = Path().apply {
+            addCircle(size / 2f, size / 2f, size / 2f, Path.Direction.CW)
+        }
+        canvas.save()
+        canvas.clipPath(path)
+        drawable.draw(canvas)
+        canvas.restore()
+        return bmp
+    }
+
+    fun rasterizeAdaptiveLayer(drawable: Drawable, size: Int, extraInset: Float): Bitmap {
+        val extra = extraInset.coerceIn(0f, 0.45f)
+        if (drawable is AdaptiveIconDrawable) {
+            return drawableToBitmap(drawable, size)
+        }
+        if (extra <= 0f) return drawableToBitmap(drawable, size)
+        val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bmp)
+        val pad = (-(extra / (1f + 2f * extra)) * size).roundToInt()
+        drawable.setBounds(pad, pad, size - pad, size - pad)
         drawable.draw(canvas)
         return bmp
     }
@@ -88,9 +125,14 @@ object BitmapUtils {
         return Bitmap.createScaledBitmap(bitmap, size, size, true)
     }
 
+    /**
+     * Optional debug cut. Pixels below [threshold] become transparent; pixels
+     * at or above keep their original alpha so antialiased edges stay smooth.
+     */
     fun applyAlphaThreshold(src: Bitmap, threshold: Float): Bitmap {
         if (threshold <= 0f) return src
         val cut = (threshold.coerceIn(0f, 1f) * 255f).roundToInt()
+        if (cut <= 0) return src
         val w = src.width
         val h = src.height
         val out = src.copy(Bitmap.Config.ARGB_8888, true)
@@ -98,7 +140,7 @@ object BitmapUtils {
         out.getPixels(pixels, 0, w, 0, 0, w, h)
         for (i in pixels.indices) {
             val a = Color.alpha(pixels[i])
-            pixels[i] = if (a < cut) Color.TRANSPARENT else (pixels[i] or 0xFF000000.toInt())
+            if (a < cut) pixels[i] = Color.TRANSPARENT
         }
         out.setPixels(pixels, 0, w, 0, 0, w, h)
         return out
