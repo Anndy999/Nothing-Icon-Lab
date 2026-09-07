@@ -25,6 +25,10 @@ class NothingRenderParamsTest {
         assertEquals(512, params.outputSize)
         assertEquals(576, NothingRenderParams.FORCED_WORK_SIZE)
         assertEquals(128, NothingRenderParams.PREVIEW_SIZE)
+        assertEquals(512, NothingRenderParams.EXPORT_SIZE)
+        assertTrue(NothingRenderParams.FORCED_WORK_SIZE >= 512)
+        assertTrue(abs(params.logoScale - 106f / 288f) > 0.01f)
+        assertTrue(params.alphaThreshold <= 0f)
     }
 
     @Test

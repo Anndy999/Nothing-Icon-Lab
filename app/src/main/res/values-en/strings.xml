@@ -27,9 +27,10 @@
     <string name="layer_original">Original</string>
     <string name="layer_foreground">Foreground</string>
     <string name="layer_background">Background</string>
-    <string name="layer_monochrome">Monochrome</string>
+    <string name="layer_monochrome">Native Mono</string>
     <string name="layer_forced">Forced Mono</string>
-    <string name="layer_result">Nothing Result</string>
+    <string name="layer_result">Final Nothing Result</string>
+    <string name="layer_missing">none</string>
     <string name="layers">Layers</string>
     <string name="meta_package">packageName</string>
     <string name="meta_activity">launcher Activity</string>
@@ -37,7 +38,7 @@
     <string name="meta_alpha">alpha range</string>
     <string name="meta_invert">invert</string>
     <string name="params_title">White plate · Nothing geometry</string>
-    <string name="params_blurb">Geometry from Nothing Launcher 2.5.9: logoScale=0.3888889, no content crop, adaptive extra inset=0.25, themed inset=1/6. Colors are a white circular plate and a black glyph. Alpha threshold defaults to 0 so edges stay antialiased. Every value is live-tunable.</string>
+    <string name="params_blurb">Geometry from Nothing Launcher 2.5.9: logoScale=0.3888889 is baked into the mono bitmap (ThemedIconDrawable draws it full-bleed). Global crop stays off; only forced mono uses the IconGrayConverter content Rect. ClippedMono uses -0.25 extra inset. Colors are a white circular plate and a black glyph. Alpha threshold defaults to 0 so edges stay antialiased.</string>
     <string name="param_logo_scale">Logo Scale</string>
     <string name="param_foreground_scale">Foreground Scale</string>
     <string name="param_adaptive_inset">Adaptive Icon Inset</string>

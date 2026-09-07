@@ -75,7 +75,9 @@ fun AppDetailScreen(viewModel: LabViewModel) {
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
             Text(
-                result?.source?.let { stringResource(it.longLabelRes) } ?: stringResource(R.string.rendering),
+                result?.source?.let {
+                    stringResource(R.string.meta_source_used, stringResource(it.longLabelRes))
+                } ?: stringResource(R.string.rendering),
                 style = MaterialTheme.typography.titleMedium,
             )
             Meta(stringResource(R.string.meta_package), app.packageName)
@@ -96,11 +98,15 @@ fun AppDetailScreen(viewModel: LabViewModel) {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Layer(stringResource(R.string.layer_original), result?.layers?.originalBitmap)
-                Layer(stringResource(R.string.layer_foreground), result?.layers?.foregroundBitmap)
-                Layer(stringResource(R.string.layer_background), result?.layers?.backgroundBitmap)
-                Layer(stringResource(R.string.layer_monochrome), result?.layers?.nativeMonochromeBitmap)
+                Layer(
+                    stringResource(R.string.layer_monochrome),
+                    result?.layers?.nativeMonochromeBitmap,
+                    missing = result != null && result.layers.nativeMonochromeBitmap == null,
+                )
                 Layer(stringResource(R.string.layer_forced), result?.forcedMono)
                 Layer(stringResource(R.string.layer_result), result?.nothingResult)
+                Layer(stringResource(R.string.layer_foreground), result?.layers?.foregroundBitmap)
+                Layer(stringResource(R.string.layer_background), result?.layers?.backgroundBitmap)
             }
 
             ParamsScreen(viewModel = viewModel, modifier = Modifier.fillMaxWidth(), scrollable = false)
@@ -117,9 +123,16 @@ private fun Meta(label: String, value: String) {
 }
 
 @Composable
-private fun Layer(label: String, bitmap: Bitmap?) {
+private fun Layer(label: String, bitmap: Bitmap?, missing: Boolean = false) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         BitmapIcon(bitmap = bitmap, size = 72.dp)
         Text(label, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(top = 4.dp))
+        if (missing) {
+            Text(
+                stringResource(R.string.layer_missing),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }

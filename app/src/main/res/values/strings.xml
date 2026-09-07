@@ -29,7 +29,8 @@
     <string name="layer_background">背景</string>
     <string name="layer_monochrome">官方单色</string>
     <string name="layer_forced">强制单色</string>
-    <string name="layer_result">Nothing 结果</string>
+    <string name="layer_result">Nothing 最终结果</string>
+    <string name="layer_missing">无</string>
     <string name="layers">图层</string>
     <string name="meta_package">包名</string>
     <string name="meta_activity">启动 Activity</string>
@@ -37,7 +38,7 @@
     <string name="meta_alpha">Alpha 范围</string>
     <string name="meta_invert">反相</string>
     <string name="params_title">白底黑标 · Nothing 几何</string>
-    <string name="params_blurb">几何来自 Nothing Launcher 2.5.9：logoScale=0.3888889，不裁切内容，adaptive extra inset=0.25，themed inset=1/6。配色是白圆形底板 + 黑色字形。Alpha 阈值默认 0，保留抗锯齿。所有参数都可实时调节。</string>
+    <string name="params_blurb">几何来自 Nothing Launcher 2.5.9：logoScale=0.3888889（写入 mono 位图，绘制时铺满底板）。全局不裁切；仅强制单色内部走 IconGrayConverter 的内容 Rect。ClippedMono 使用 -0.25 extra inset。配色是白圆形底板 + 黑色字形。Alpha 阈值默认 0，保留抗锯齿。</string>
     <string name="param_logo_scale">Logo 缩放</string>
     <string name="param_foreground_scale">前景缩放</string>
     <string name="param_adaptive_inset">Adaptive 内缩</string>
