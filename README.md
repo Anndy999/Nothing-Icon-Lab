@@ -17,16 +17,16 @@ Theme Park 的循环太慢：
 
 1. 扫描所有可启动应用
 2. 读取 **真实** APK 图标（`packageName` + 启动 Activity + Adaptive Icon + `monochrome`）
-3. 优先官方 Android 13+ 单色；否则走 AOSP `MonochromeIconFactory`
-4. 套用还原的 Nothing 底板（圆形背景 + 居中字形）
+3. 优先官方 Android 13+ 单色（`ClippedMonoDrawable(-0.25)`）；否则走 Nothing `createGeneralMono` / IconGrayConverter 还原（AOSP 亮度 + 内容 Rect）
+4. 套用还原的 Nothing 底板（`ThemedIconDrawable`：圆形背景 + 已含 0.3888889 的字形）
 5. 实时调参，网格立刻更新
 6. 导出面向 Theme Park 的测试包（`appfilter.xml` + PNG）
 
-默认视觉是 **白底黑标**（Nada 无题已适配图标的字形占比，颜色取反）。参数页可切回黑底白标，也可还原 Nothing Launcher 2.5.9 常量。Lawnicons 只当基础设施（扫描 / Adaptive Icon / appfilter 思路）。
+几何与算法以 **Nothing Launcher 2.5.9** 为准。显示配色是 **白圆形底板 + 黑色字形**。Lawnicons 只当基础设施（扫描 / Adaptive Icon / appfilter 思路）。
 
 ## 当前状态
 
-**v0.1.2** — 默认白底黑标（圆形 `#F1F1F1` 底板 + `#1B1B1B` 字形，字形约占 0.37）；中文界面。
+**v0.1.3** — 按 Nothing Launcher 2.5.9 调用链还原几何（logoScale=0.3888889 写入 mono 位图，ClippedMono -0.25，forced 内部 content Rect）+ 白底黑标；高分辨率 forced/export；九个验证应用。
 
 | 功能 | 状态 |
 | --- | --- |
