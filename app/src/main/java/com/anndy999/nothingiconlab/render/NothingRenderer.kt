@@ -11,11 +11,11 @@ import com.anndy999.nothingiconlab.LabLog
 import com.anndy999.nothingiconlab.data.IconSource
 
 /**
- * Reconstructed Nothing-style compositor.
+ * Reconstructs Nothing ThemedIconDrawable composition:
+ * circular plate + centered mono glyph scaled by 0.3888889.
  *
- * This is NOT a copy of Nothing's closed-source ThemedIconDrawable.
- * It applies independently verified AOSP rules plus tunable Nothing-like
- * layout (circular plate + centered glyph + logoScale).
+ * Not a copy of Nothing closed source. Insets are not stacked as a second
+ * crop on top of logoScale (that was the v0.1.1/v0.1.2 geometry mistake).
  */
 object NothingRenderer {
 
@@ -29,15 +29,12 @@ object NothingRenderer {
         size: Int = params.outputSize,
     ): Bitmap {
         var working = BitmapUtils.toWhiteGlyph(glyph)
-
-        val alphaCut = (params.alphaThreshold.coerceIn(0f, 1f) * 255f).toInt()
         working = BitmapUtils.applyAlphaThreshold(working, params.alphaThreshold)
 
         if (params.cropToContent) {
+            val alphaCut = (params.alphaThreshold.coerceIn(0f, 1f) * 255f).toInt()
             val bounds = BitmapUtils.contentBounds(working, alphaCut)
             working = BitmapUtils.squarePad(BitmapUtils.crop(working, bounds))
-        } else {
-            working = applyInsets(working, params)
         }
 
         val (minA, maxA) = BitmapUtils.alphaRange(working)
@@ -74,20 +71,5 @@ object NothingRenderer {
                 "alphaRange=$minA..$maxA dark=$dark size=$size",
         )
         return out
-    }
-
-    private fun applyInsets(src: Bitmap, params: NothingRenderParams): Bitmap {
-        val adaptive = params.adaptiveIconInset.coerceIn(0f, 0.45f)
-        val mono = params.monochromeInset.coerceIn(0f, 0.45f)
-        val combined = (adaptive + mono).coerceAtMost(0.49f)
-        if (combined <= 0f) return src
-        val size = src.width.coerceAtLeast(1)
-        val insetPx = (size * combined).toInt()
-        val inner = (size - insetPx * 2).coerceAtLeast(1)
-        return try {
-            Bitmap.createBitmap(src, insetPx, insetPx, inner, inner)
-        } catch (_: IllegalArgumentException) {
-            src
-        }
     }
 }
