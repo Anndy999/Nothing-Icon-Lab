@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.1.3
+
+### Changed
+
+- 几何全部回到 Nothing Launcher 2.5.9 实际调用链（见 `docs/RESEARCH.md`），不再用 Nada 截图或 106/288 猜几何。
+- `logoScale=0.3888889` 来自 `n3/a.g` / `n3/a.h` / `o3/a.m`，写入 mono 位图；`ThemedIconDrawable.drawInternal` 铺满底板。本仓库在 compose 时做同一缩放。
+- 全局 `cropToContent=false`。仅 forced 路径内部模仿 `IconGrayConverter.o3/a.l` 的 content Rect。
+- ClippedMono 使用 DEX 核实的 `-getExtraInsetFraction()` = **-0.25**，不是把 1/6 再叠一层。`n3/a.a=1/6` 只属于 `n3/a.b` wrap。
+- Nada **只**决定显示方向：白圆形底板 + 黑色字形（`#FFFFFF` / `#000000`）。「深色预览」可反相。
+- Native 从 Drawable 按输出尺寸栅格化，不先压成 192。Forced 工作尺寸 576。Export / 详情 ≥512，且 export 必须重新渲染，不用 preview 缓存。
+- Alpha 阈值默认 0：低于阈值的像素变透明，其余保留原 alpha，不再把抗锯齿边打成 255。
+- 网格增加「验证」筛选：Chrome / 微信 / ChatGPT / X / 抖音 / Telegram / Google / Gmail / YouTube。详情页显示 Original / Native Mono / Forced Mono / Final Nothing Result，并标明实际 `IconSource`。
+
+### Fixed
+
+- v0.1.2 误用 Nada 的 106/288 和 cropToContent=true。
+- 192px 全链路导致最终图标发糊。
+- ClippedMono 误用 extra/(1+2*extra)=1/6 作为负 inset（应为 -0.25）。
+
+### Known Issues
+
+- GitHub Release 签名 secrets 仍未配置；APK 在配置前仍是 debug 签名。
+- 尚无 Theme Park APK 生成器（计划 v0.3 / v0.4）。
+- 照片/多色图标的强制单色质量较差（预期行为）。
+- 不把 Nothing / Nada 专有 APK 或画稿打进仓库。
+
 ## v0.1.2
 
 ### Changed
