@@ -7,6 +7,7 @@ import android.util.Log
 import com.anndy999.nothingiconlab.LabLog
 import com.anndy999.nothingiconlab.render.BitmapUtils
 import com.anndy999.nothingiconlab.render.MonochromeIconFactory
+import com.anndy999.nothingiconlab.render.NothingColors
 import com.anndy999.nothingiconlab.render.NothingRenderParams
 import com.anndy999.nothingiconlab.render.NothingRenderer
 
@@ -46,11 +47,18 @@ object IconPipeline {
             IconSource.FORCED_MONO -> forced?.bitmap
             IconSource.FALLBACK -> layers.originalBitmap?.let { grayscaleFallback(it) }
         }
+        val (bg, fg) = NothingColors.resolve(context, params, dark)
+        val colored = params.copy(
+            lightBackground = if (dark) params.lightBackground else bg,
+            lightForeground = if (dark) params.lightForeground else fg,
+            darkBackground = if (dark) bg else params.darkBackground,
+            darkForeground = if (dark) fg else params.darkForeground,
+        )
         val result = glyph?.let {
             NothingRenderer.render(
                 glyph = it,
                 source = source,
-                params = params,
+                params = colored,
                 packageName = app.packageName,
                 component = app.componentFlattened,
                 dark = dark,
