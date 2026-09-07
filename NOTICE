@@ -1,0 +1,17 @@
+Nothing Icon Lab
+Copyright 2026 Anndy999
+
+This product includes software developed from:
+
+- Android Open Source Project (Launcher3 MonochromeIconFactory / AdaptiveIconDrawable
+  themed-icon pipeline), licensed under the Apache License 2.0.
+  https://cs.android.com/android/platform/superproject/main/+/main:packages/apps/Launcher3/
+
+- Lawnicons by Lawnchair Launcher (launchable-app scan and Adaptive Icon bitmap
+  handling, used as infrastructure reference), licensed under the Apache License 2.0.
+  https://github.com/LawnchairLauncher/lawnicons
+
+Nothing Icon Lab is not affiliated with Nothing Technology Limited.
+Nothing and Nothing OS are trademarks of their respective owner.
+
+This repository does not include Nothing proprietary APKs or closed-source code.
