@@ -15,6 +15,7 @@
     <string name="filter_forced">Forced</string>
     <string name="filter_fallback">Fallback</string>
     <string name="filter_bad">Bad</string>
+    <string name="filter_verify">Verify</string>
     <string name="source_native">Native</string>
     <string name="source_forced">Forced</string>
     <string name="source_fallback">Fallback</string>
@@ -35,8 +36,8 @@
     <string name="meta_component">ComponentName</string>
     <string name="meta_alpha">alpha range</string>
     <string name="meta_invert">invert</string>
-    <string name="params_title">White plate, black glyph</string>
-    <string name="params_blurb">Defaults are Nada geometry inverted: circular plate #F1F1F1, glyph #1B1B1B, cropped glyph ≈ 0.37 of the canvas. System neutrals and stacked adaptive+mono insets are off. Every value is live-tunable.</string>
+    <string name="params_title">White plate · Nothing geometry</string>
+    <string name="params_blurb">Geometry from Nothing Launcher 2.5.9: logoScale=0.3888889, no content crop, adaptive extra inset=0.25, themed inset=1/6. Colors are a white circular plate and a black glyph. Alpha threshold defaults to 0 so edges stay antialiased. Every value is live-tunable.</string>
     <string name="param_logo_scale">Logo Scale</string>
     <string name="param_foreground_scale">Foreground Scale</string>
     <string name="param_adaptive_inset">Adaptive Icon Inset</string>
@@ -52,8 +53,9 @@
     <string name="param_crop">Crop to content</string>
     <string name="param_dark_preview">Dark preview plate</string>
     <string name="param_system_neutral">Use system neutrals</string>
-    <string name="reset_defaults">Reset to white-plate default</string>
-    <string name="reset_done">Reset to white-plate default</string>
+    <string name="reset_defaults">Reset to Nothing Default</string>
+    <string name="reset_done">Reset to Nothing Default (white plate)</string>
+    <string name="meta_source_used">Source used: %1$s</string>
     <string name="export_chooser">Export Test Pack</string>
     <string name="export_done">Exported %1$d icons</string>
     <string name="export_failed">Export failed: %1$s</string>

@@ -15,6 +15,7 @@
     <string name="filter_forced">强制</string>
     <string name="filter_fallback">回退</string>
     <string name="filter_bad">较差</string>
+    <string name="filter_verify">验证</string>
     <string name="source_native">官方</string>
     <string name="source_forced">强制</string>
     <string name="source_fallback">回退</string>
@@ -35,8 +36,8 @@
     <string name="meta_component">ComponentName</string>
     <string name="meta_alpha">Alpha 范围</string>
     <string name="meta_invert">反相</string>
-    <string name="params_title">白底黑标渲染器</string>
-    <string name="params_blurb">默认白底黑标：圆形底板 #F1F1F1、字形 #1B1B1B，裁切后字形约占 0.37（几何来自 Nada 无题已适配图标的实测，颜色取反）。不使用系统中性色，也不再叠 adaptive+mono 内缩。所有参数都可实时调节。</string>
+    <string name="params_title">白底黑标 · Nothing 几何</string>
+    <string name="params_blurb">几何来自 Nothing Launcher 2.5.9：logoScale=0.3888889，不裁切内容，adaptive extra inset=0.25，themed inset=1/6。配色是白圆形底板 + 黑色字形。Alpha 阈值默认 0，保留抗锯齿。所有参数都可实时调节。</string>
     <string name="param_logo_scale">Logo 缩放</string>
     <string name="param_foreground_scale">前景缩放</string>
     <string name="param_adaptive_inset">Adaptive 内缩</string>
@@ -52,8 +53,9 @@
     <string name="param_crop">裁切到内容</string>
     <string name="param_dark_preview">深色预览底板</string>
     <string name="param_system_neutral">使用系统中性色</string>
-    <string name="reset_defaults">重置为白底黑标默认</string>
-    <string name="reset_done">已重置为白底黑标默认</string>
+    <string name="reset_defaults">重置为 Nothing 默认</string>
+    <string name="reset_done">已重置为 Nothing 默认（白底黑标）</string>
+    <string name="meta_source_used">实际来源：%1$s</string>
     <string name="export_chooser">导出测试包</string>
     <string name="export_done">已导出 %1$d 个图标</string>
     <string name="export_failed">导出失败：%1$s</string>

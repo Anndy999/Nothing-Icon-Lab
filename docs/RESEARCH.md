@@ -1,75 +1,93 @@
 # 研究笔记 — Nothing 渲染器还原
 
-Nothing Icon Lab **不**附带 Nothing 专有代码。渲染器是根据以下材料重建的：
+Nothing Icon Lab **不**附带 Nothing 或 Nada 专有代码 / APK。渲染器根据以下材料重建：
 
-1. AOSP Launcher3 `MonochromeIconFactory`（Apache 2.0）
-2. AOSP `AdaptiveIconDrawable` extra-inset 计算
-3. AOSP `ThemedIconDrawable` 的 themed-icon 内缩
-4. Lawnicons 可启动应用扫描（`ACTION_MAIN` + `CATEGORY_LAUNCHER`）
-5. Nothing OS 主题图标的公开外观（圆形底板 + 黑白字形）
-6. **Nothing Launcher 2.5.9 / Nothing Icon 1.0.1 字节码核对**（v0.1.1，APK 仅用于本地研究，不入库）
-7. **Nada 无题**（`com.panpandada.nada.pay` 16.0 / 260719）已适配图标的几何与颜色实测（v0.1.2，APK 仅用于本地研究，**不复制其画稿，不入库**）
+1. AOSP Launcher3 `BaseIconFactory` / `ThemedIconDrawable` / `ClippedMonoDrawable`（Apache 2.0）
+2. AOSP `AdaptiveIconDrawable.getExtraInsetFraction()` = 0.25
+3. **Nothing Launcher 2.5.9** `classes.dex` + `classes2.dex` 实际方法（本地分析，不入库）
+4. **Nothing Icon 1.0.1** 作为 OS themed-icon provider（不是 appfilter 包）
 
-## 已核实（AOSP）
+Nada 无题 **只**用来确认用户要的显示方向：白色圆形底板 + 黑色字形。它不参与 scale / inset / crop / forced mono / normalization / shape / pipeline。
+
+## 调用链（Nothing Launcher 2.5.9）
+
+```
+Themes.isThemedIconEnabled()
+  ← THEMED_ICONS_NOTHING / themed_icons_nothing
+
+n3/a.a(Context, size…, Drawable icon, …, BaseIconFactory)
+  ├─ icon is ThemedIconDrawable → getMonoIcon()
+  ├─ icon is AdaptiveIconDrawable → getMonochrome()     // native
+  ├─ n3/a.f(package) true → n3/a.h(mono, IconGrayConverter)  // package override
+  └─ Lo3/b.s() force-render
+        ├─ n3/a.j → n3/a.g(native drawable, converter)
+        └─ n3/a.d → n3/a.c  // log: "createGeneralMono failed, exception is"
+
+n3/a.g / n3/a.h
+  ├─ ClippedMonoDrawable(mono, AdaptiveIconDrawable.getExtraInsetFraction())
+  ├─ rasterize ALPHA_8 at converter size, scale 1.0
+  └─ rasterize ALPHA_8 at converter size, scale 0.3888889 * converter.h()
+
+n3/a.c  createGeneralMono
+  ├─ n3/a.i → may strip ColorDrawable background, then
+  │     BaseIconFactory.createNormalizedBitmap(drawable, bitmap, flags)
+  └─ o3/a.m(Bitmap)  // IconGrayConverter, class log tag IconGrayConverter
+        ├─ requires square bitmap of converter size
+        ├─ o3/a.l → content Rect (forced path only)
+        └─ scale const 0.3888889f onto ALPHA_8
+
+n3/a.b(mono, scale, Context) → AdaptiveIconDrawable
+  ├─ ClippedMonoDrawable(mono, extraInset)
+  ├─ InsetDrawable(clipped, n3/a.a)   // n3/a.a = extra/(1+2*extra) = 1/6
+  ├─ ThemedIconDrawable.getColors(context) → tint glyph
+  └─ AdaptiveIconDrawable(ColorDrawable(bg), tintedMono)
+
+ThemedIconDrawable.drawInternal
+  ├─ fill circular/path plate with bg color
+  └─ draw mono with fg color filter
+
+BitmapInfo.isNTMono / BaseIconFactory.setNTMono
+  marks NT-generated mono vs generic themed icons
+
+nothing_icon_pack_force_render_enable
+  Lo3/b.s() / NothingIconForceRenderUpdateTask
+```
+
+`0.3888889f`（IEEE-754 `72 1c c7 3e`）出现在 `classes2.dex`：
+
+| 方法 | 作用 |
+| --- | --- |
+| `n3/a.g` | native mono 栅格化 scale |
+| `n3/a.h` | 另一条 mono 栅格化 scale |
+| `o3/a.m` | forced `IconGrayConverter` scale |
+
+这是 **createIconBitmap 风格的整图缩放**，不是把字形 bbox 裁成 106/288。
+
+## 已核实常量
 
 | 常量 | 值 | 来源 |
 | --- | --- | --- |
-| Adaptive extra inset | `0.25` | `AdaptiveIconDrawable.getExtraInsetFraction()` |
-| Viewport scale | `1 / (1 + 2 * 0.25) = 2/3` | AOSP |
-| Themed mono inset | `0.25 / 1.5 = 1/6 ≈ 0.1667` | AOSP ThemedIconDrawable |
-| Forced mono | 灰度 → RGB 均值作 alpha → 对比拉伸 → 可选边缘翻转 | AOSP MonochromeIconFactory |
+| Adaptive extra inset | `0.25` | `AdaptiveIconDrawable.getExtraInsetFraction()`；`n3/a.<clinit>` 读取 |
+| Themed / ClippedMono inset | `0.25/1.5 = 1/6` | `n3/a.<clinit>` 写入静态字段 `n3/a.a`；`InsetDrawable` |
+| logoScale | `0.3888889` | 上表三个方法 |
+| cropToContent | **关**（默认） | native 路径按整张 drawable 缩放；forced 的 `o3/a.l` Rect 只在 gray converter 内部 |
+| Forced work size (lab) | **576** | 本仓库；Nothing 用 `BaseIconFactory` 的 icon bitmap size |
+| Export size | **≥512** | 本仓库；preview 缓存不得用于 export |
+| 底板 / 字形（显示） | `#FFFFFF` / `#000000` | 用户指定白底黑标；不是 Nada 几何 |
 
-## 已核实（Nothing Launcher 2.5.9）
-
-本地对 `classes2.dex` 的扫描结果（IEEE-754 小端 `72 1c c7 3e` = `0.3888889f`）出现 **3 次**，随后都是 `invoke-virtual`，与 `createIconBitmap` 一类缩放一致。
-
-| 参数 | 默认 | 状态 |
-| --- | --- | --- |
-| `logoScale` | `0.3888889`（7/18） | **已核实**：`classes2.dex` 偏移 2641702 / 2641862 / 2686772 |
-| 圆形底板 | `backgroundSize = 1.0` | 与公开截图一致 |
-| 浅色底板 / 字形 | `system_neutral1_50` / `system_neutral1_900` | 资源 `mono_nothing_background_color` / `foreground_color` 指向 `android.R.color`（默认约 `#F1F0F7` / `#1A1B20`，可随壁纸变） |
-| 深色（night） | 两者对调 | 同资源的 night 配置 |
-| `cropToContent` | **关** | `0.3888889` 缩放的是整张 drawable，而不是裁切后的内容框 |
-
-资源中还能看到：
-
-- 字符串：`THEMED_ICONS_NOTHING`、`themed_icons_nothing`、`nothing_icon_pack_force_render_enable`、`ThemedIconDrawable`、`forced_mono`、`isNTMono` / `setNTMono`、`createGeneralMono`
-- 颜色：`mono_nothing_background_color`、`mono_nothing_foreground_color`、`icon_pack_nothing_icon_bg_color`
-- XML：`grayscale_icon_map` / `nt_grayscale_icon_map` 存在，但解码后是空的 `<icons/>` 占位
-- **没有**名为 `MonochromeIconFactory` 的 Nothing 类（强制单色走 AOSP 路径）
-
-`com.nothing.icon` 1.0.1 是 OS feature 主题图标提供者（要求 `com.nothing.feature.OS.V2_0`），不是经典 appfilter 图标包。
-
-## 已核实（Nada 无题 16.0，v0.1.2 视觉默认）
-
-v0.1.1 把 Nothing 的 `0.3888889` 叠在 adaptive 0.25 + mono 1/6 内缩上，字形被裁得很小，看起来不像成品图标包。Nada 无题里已经画好的图标（Chrome / 微信 / 支付宝 / QQ 等，288px）实测：
-
-| 参数 | 值 | 说明 |
-| --- | --- | --- |
-| 画布 | 288×288，四角全透明 | 圆形底板 |
-| 底板 | `#1B1B1B`（rgb 27,27,27） | 40 张抽样全部相同 |
-| 字形 | `#F1F1F1`（rgb 241,241,241） | Nada 本体是黑底白标 |
-| 裁切后字形 bbox | 中位 **106/288 ≈ 0.368**（范围约 0.33–0.39） | 用作 `logoScale` + `cropToContent` |
-| appfilter `<scale>` | **0.44** | 只用于未适配的彩色原图标，不是已画好图标的字形占比 |
-| iconback 中心白孔 | 106×106（0.368） | 与已适配字形同尺寸 |
-| iconupon | 全透明 | 无叠加层 |
-
-**不把 Nada 的 PNG / appfilter 画稿打进本仓库。** 只吸收圆形底板和字形占比。v0.1.2 默认把颜色取反成 **白底黑标**（`#F1F1F1` 底板 / `#1B1B1B` 字形）；参数页的「深色预览」可切回 Nada 同款黑底白标。Nothing 的 `0.3888889` 仍可手动拨回去。
-
-## v0.1 管线
+## 本仓库如何对应
 
 ```
-真实 APK 图标
-  ├─ AdaptiveIconDrawable.monochrome  → NATIVE_MONO
-  ├─ 否则 AOSP MonochromeIconFactory  → FORCED_MONO
-  └─ 否则启动图标灰度                 → FALLBACK
+真实 APK AdaptiveIconDrawable
+  ├─ getMonochrome()     → NATIVE_MONO   rasterizeClippedMono at output size
+  ├─ else createNormalizedBitmap + AOSP MonochromeIconFactory → FORCED_MONO at 576
+  └─ else grayscale of launcher icon → FALLBACK
 
-字形
-  → 可选 alpha 阈值
-  → 默认裁切到内容（v0.1.2），不再叠 adaptive+mono 内缩
-  → 缩放到 logoScale * foregroundScale（默认 106/288）
-  → 居中放到圆形白底板（默认） / 炭黑板（深色预览）
+字形（保留 smooth alpha）
+  → 不默认 alpha 二值化
+  → 不默认 cropToContent
+  → 缩放到 logoScale 0.3888889
+  → 居中放到白色圆形底板，黑色 SRC_IN
 ```
 
-不要默认使用 Lawnicons SVG 或网上下载的品牌 Logo。
-仓库中也不保留 Nothing / Nada 专有 APK。
+Preview 用 128px 缓存。详情 / 导出从 Drawable 或 576 forced 源 **重新渲染**，不用 preview bitmap。
