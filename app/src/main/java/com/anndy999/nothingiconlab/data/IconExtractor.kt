@@ -1,6 +1,5 @@
 package com.anndy999.nothingiconlab.data
 
-import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.drawable.AdaptiveIconDrawable
@@ -8,14 +7,20 @@ import android.graphics.drawable.Drawable
 import android.util.Log
 import com.anndy999.nothingiconlab.LabLog
 import com.anndy999.nothingiconlab.render.BitmapUtils
+import com.anndy999.nothingiconlab.render.NothingRenderParams
 
 /**
  * Reads the real installed APK icon. Never substitutes a downloaded brand logo.
+ * Drawables stay Drawables; bitmaps are rasterized at the caller's size.
  */
 object IconExtractor {
-    private const val LAYER_SIZE = 192
 
-    fun extract(context: Context, app: LaunchedApp): AppIconLayers {
+    fun extract(
+        context: Context,
+        app: LaunchedApp,
+        layerSize: Int,
+        extraInset: Float = NothingRenderParams.DEFAULT_ADAPTIVE_INSET,
+    ): AppIconLayers {
         val pm = context.packageManager
         val original = loadHighResIcon(pm, app)
         val adaptive = unwrapAdaptive(original)
@@ -25,20 +30,26 @@ object IconExtractor {
         val layers = AppIconLayers(
             app = app,
             original = original,
-            originalBitmap = original?.let { BitmapUtils.drawableToBitmap(it, LAYER_SIZE) },
+            originalBitmap = original?.let { BitmapUtils.drawableToBitmap(it, layerSize) },
             isAdaptive = adaptive != null,
             foreground = foreground,
-            foregroundBitmap = foreground?.let { BitmapUtils.drawableToBitmap(it, LAYER_SIZE) },
+            foregroundBitmap = foreground?.let {
+                BitmapUtils.rasterizeAdaptiveLayer(it, layerSize, extraInset)
+            },
             background = background,
-            backgroundBitmap = background?.let { BitmapUtils.drawableToBitmap(it, LAYER_SIZE) },
+            backgroundBitmap = background?.let {
+                BitmapUtils.rasterizeAdaptiveLayer(it, layerSize, extraInset)
+            },
             nativeMonochrome = nativeMono,
-            nativeMonochromeBitmap = nativeMono?.let { BitmapUtils.drawableToBitmap(it, LAYER_SIZE) },
+            nativeMonochromeBitmap = nativeMono?.let {
+                BitmapUtils.rasterizeClippedMono(it, layerSize, extraInset)
+            },
             hasNativeMonochrome = nativeMono != null,
         )
         Log.i(
             LabLog.TAG,
             "IconExtractor package=${app.packageName} component=${app.componentFlattened} " +
-                "adaptive=${layers.isAdaptive} nativeMono=${layers.hasNativeMonochrome}",
+                "adaptive=${layers.isAdaptive} nativeMono=${layers.hasNativeMonochrome} layerSize=$layerSize",
         )
         return layers
     }

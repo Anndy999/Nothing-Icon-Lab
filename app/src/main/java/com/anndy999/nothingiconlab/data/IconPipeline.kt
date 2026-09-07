@@ -3,6 +3,7 @@ package com.anndy999.nothingiconlab.data
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.AdaptiveIconDrawable
+import android.graphics.drawable.Drawable
 import android.util.Log
 import com.anndy999.nothingiconlab.LabLog
 import com.anndy999.nothingiconlab.render.BitmapUtils
@@ -24,18 +25,19 @@ data class PipelineResult(
 )
 
 object IconPipeline {
-    private const val WORK_SIZE = 192
 
     fun process(
         context: Context,
         app: LaunchedApp,
         params: NothingRenderParams,
         dark: Boolean,
-        outputSize: Int = params.outputSize,
+        outputSize: Int,
+        forcedWorkSize: Int = NothingRenderParams.FORCED_WORK_SIZE,
+        layerSize: Int = outputSize,
     ): PipelineResult {
-        val layers = IconExtractor.extract(context, app)
+        val layers = IconExtractor.extract(context, app, layerSize, params.adaptiveIconInset)
         val adaptive = IconExtractor.unwrapAdaptive(layers.original)
-        val forced = buildForced(adaptive, layers, params)
+        val forced = buildForced(adaptive, layers, params, forcedWorkSize)
         val source = SourceResolver.resolve(
             hasNative = layers.hasNativeMonochrome,
             preferNative = params.preferNativeMonochrome,
@@ -43,9 +45,9 @@ object IconPipeline {
             canForce = forced != null || layers.original != null,
         )
         val glyph = when (source) {
-            IconSource.NATIVE_MONO -> layers.nativeMonochromeBitmap
+            IconSource.NATIVE_MONO -> rasterizeNative(layers.nativeMonochrome, outputSize, params)
             IconSource.FORCED_MONO -> forced?.bitmap
-            IconSource.FALLBACK -> layers.originalBitmap?.let { grayscaleFallback(it) }
+            IconSource.FALLBACK -> fallbackGlyph(layers, outputSize)
         }
         val (bg, fg) = NothingColors.resolve(context, params, dark)
         val colored = params.copy(
@@ -69,7 +71,8 @@ object IconPipeline {
         Log.i(
             LabLog.TAG,
             "IconSource: $source package=${app.packageName} component=${app.componentFlattened} " +
-                "native=${layers.hasNativeMonochrome} adaptive=${layers.isAdaptive}",
+                "native=${layers.hasNativeMonochrome} adaptive=${layers.isAdaptive} " +
+                "output=$outputSize forcedWork=$forcedWorkSize",
         )
         return PipelineResult(
             app = app,
@@ -84,12 +87,29 @@ object IconPipeline {
         )
     }
 
+    private fun rasterizeNative(
+        drawable: Drawable?,
+        size: Int,
+        params: NothingRenderParams,
+    ): Bitmap? {
+        if (drawable == null) return null
+        return BitmapUtils.rasterizeClippedMono(drawable, size, params.adaptiveIconInset)
+    }
+
+    private fun fallbackGlyph(layers: AppIconLayers, size: Int): Bitmap? {
+        val src = layers.original?.let { BitmapUtils.drawableToBitmap(it, size) }
+            ?: layers.originalBitmap
+            ?: return null
+        return grayscaleFallback(src)
+    }
+
     private fun buildForced(
         adaptive: AdaptiveIconDrawable?,
         layers: AppIconLayers,
         params: NothingRenderParams,
+        workSize: Int,
     ): MonochromeIconFactory.ForcedMonoResult? {
-        val factory = MonochromeIconFactory(WORK_SIZE)
+        val factory = MonochromeIconFactory(workSize)
         return try {
             if (adaptive != null) {
                 factory.wrap(adaptive, params)
