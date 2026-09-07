@@ -35,8 +35,8 @@
     <string name="meta_component">ComponentName</string>
     <string name="meta_alpha">Alpha 范围</string>
     <string name="meta_invert">反相</string>
-    <string name="params_title">Nothing 渲染器</string>
-    <string name="params_blurb">默认值来自 Nothing Launcher 2.5.9 字节码（logoScale=0.3888889）以及系统中性色 system_neutral1_50 / 900。所有参数都可实时调节。</string>
+    <string name="params_title">白底黑标渲染器</string>
+    <string name="params_blurb">默认白底黑标：圆形底板 #F1F1F1、字形 #1B1B1B，裁切后字形约占 0.37（几何来自 Nada 无题已适配图标的实测，颜色取反）。不使用系统中性色，也不再叠 adaptive+mono 内缩。所有参数都可实时调节。</string>
     <string name="param_logo_scale">Logo 缩放</string>
     <string name="param_foreground_scale">前景缩放</string>
     <string name="param_adaptive_inset">Adaptive 内缩</string>
@@ -52,8 +52,8 @@
     <string name="param_crop">裁切到内容</string>
     <string name="param_dark_preview">深色预览底板</string>
     <string name="param_system_neutral">使用系统中性色</string>
-    <string name="reset_defaults">重置为 Nothing 默认</string>
-    <string name="reset_done">已重置为 Nothing 默认</string>
+    <string name="reset_defaults">重置为白底黑标默认</string>
+    <string name="reset_done">已重置为白底黑标默认</string>
     <string name="export_chooser">导出测试包</string>
     <string name="export_done">已导出 %1$d 个图标</string>
     <string name="export_failed">导出失败：%1$s</string>
