@@ -5,9 +5,10 @@ import kotlinx.serialization.Serializable
 /**
  * Tunable plate + glyph parameters.
  *
- * Visual defaults match the finished Nada 无题 (com.panpandada.nada.pay 16.0)
- * themed icons measured from 288px assets — not a copy of that pack:
- * - circular charcoal plate #1B1B1B, light glyph #F1F1F1
+ * Geometry is measured from Nada 无题 (com.panpandada.nada.pay 16.0)
+ * 288px assets — not a copy of that pack. Nada itself is black-plate /
+ * white-glyph; this app defaults to the inverse the user asked for:
+ * - circular off-white plate #F1F1F1, charcoal glyph #1B1B1B
  * - cropped glyph bbox ≈ 106/288 ≈ 0.368 of the canvas
  * - appfilter scale 0.44 is only for unthemed (uncropped) fallbacks
  *
@@ -30,7 +31,7 @@ data class NothingRenderParams(
     val preferNativeMonochrome: Boolean = true,
     val cropToContent: Boolean = true,
     val followSystemDark: Boolean = true,
-    val previewDark: Boolean = true,
+    val previewDark: Boolean = false,
     val useSystemNeutralColors: Boolean = false,
     val lightBackground: Int = NADA_GLYPH,
     val lightForeground: Int = NADA_PLATE,

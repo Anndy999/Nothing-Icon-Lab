@@ -8,7 +8,7 @@ import kotlin.math.abs
 
 class NothingRenderParamsTest {
     @Test
-    fun defaultMatchesNadaBlackPlateWhiteGlyph() {
+    fun defaultIsWhitePlateBlackGlyph() {
         val params = NothingRenderParams.nothingDefault()
         assertTrue(abs(params.logoScale - (106f / 288f)) < 1e-6)
         assertEquals(0f, params.adaptiveIconInset)
@@ -16,11 +16,11 @@ class NothingRenderParamsTest {
         assertTrue(params.preferNativeMonochrome)
         assertTrue(params.cropToContent)
         assertFalse(params.useSystemNeutralColors)
-        assertTrue(params.previewDark)
-        assertEquals(NothingRenderParams.NADA_PLATE, params.darkBackground)
-        assertEquals(NothingRenderParams.NADA_GLYPH, params.darkForeground)
+        assertFalse(params.previewDark)
         assertEquals(NothingRenderParams.NADA_GLYPH, params.lightBackground)
         assertEquals(NothingRenderParams.NADA_PLATE, params.lightForeground)
+        assertEquals(NothingRenderParams.NADA_PLATE, params.darkBackground)
+        assertEquals(NothingRenderParams.NADA_GLYPH, params.darkForeground)
     }
 
     @Test
