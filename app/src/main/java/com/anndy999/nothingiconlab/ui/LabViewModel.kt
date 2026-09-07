@@ -8,6 +8,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.anndy999.nothingiconlab.LabLog
+import com.anndy999.nothingiconlab.R
 import com.anndy999.nothingiconlab.data.IconPipeline
 import com.anndy999.nothingiconlab.data.IconSource
 import com.anndy999.nothingiconlab.data.LaunchedApp
@@ -105,7 +106,7 @@ class LabViewModel(application: Application) : AndroidViewModel(application) {
 
     fun resetParams() {
         updateParams { NothingRenderParams.nothingDefault() }
-        _state.update { it.copy(message = "Reset to Nothing Default") }
+        _state.update { it.copy(message = getApplication<Application>().getString(R.string.reset_done)) }
     }
 
     fun setDarkPreview(dark: Boolean) {
@@ -208,10 +209,23 @@ class LabViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
                 share(file)
-                _state.update { it.copy(exporting = false, message = "Exported ${apps.size} icons") }
+                _state.update {
+                    it.copy(
+                        exporting = false,
+                        message = getApplication<Application>().getString(R.string.export_done, apps.size),
+                    )
+                }
             } catch (t: Throwable) {
                 Log.e(LabLog.TAG, "export failed", t)
-                _state.update { it.copy(exporting = false, message = "Export failed: ${t.message}") }
+                _state.update {
+                    it.copy(
+                        exporting = false,
+                        message = getApplication<Application>().getString(
+                            R.string.export_failed,
+                            t.message ?: "",
+                        ),
+                    )
+                }
             }
         }
     }
@@ -225,6 +239,9 @@ class LabViewModel(application: Application) : AndroidViewModel(application) {
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
-        context.startActivity(Intent.createChooser(intent, "Export Test Pack").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        context.startActivity(
+            Intent.createChooser(intent, context.getString(R.string.export_chooser))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
     }
 }

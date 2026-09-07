@@ -22,6 +22,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.anndy999.nothingiconlab.R
 import com.anndy999.nothingiconlab.ui.LabTab
 import com.anndy999.nothingiconlab.ui.LabViewModel
 
@@ -45,7 +47,7 @@ fun LabApp(viewModel: LabViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nothing Icon Lab") },
+                title = { Text(stringResource(R.string.app_name)) },
             )
         },
         bottomBar = {
@@ -53,26 +55,26 @@ fun LabApp(viewModel: LabViewModel) {
                 NavigationBarItem(
                     selected = state.tab == LabTab.GRID,
                     onClick = { viewModel.setTab(LabTab.GRID) },
-                    icon = { Icon(Icons.Outlined.GridView, contentDescription = "Grid") },
-                    label = { Text("Grid") },
+                    icon = { Icon(Icons.Outlined.GridView, contentDescription = stringResource(R.string.tab_grid)) },
+                    label = { Text(stringResource(R.string.tab_grid)) },
                 )
                 NavigationBarItem(
                     selected = state.tab == LabTab.LIST,
                     onClick = { viewModel.setTab(LabTab.LIST) },
-                    icon = { Icon(Icons.Outlined.Apps, contentDescription = "List") },
-                    label = { Text("List") },
+                    icon = { Icon(Icons.Outlined.Apps, contentDescription = stringResource(R.string.tab_list)) },
+                    label = { Text(stringResource(R.string.tab_list)) },
                 )
                 NavigationBarItem(
                     selected = state.tab == LabTab.PARAMS,
                     onClick = { viewModel.setTab(LabTab.PARAMS) },
-                    icon = { Icon(Icons.Outlined.Tune, contentDescription = "Params") },
-                    label = { Text("Params") },
+                    icon = { Icon(Icons.Outlined.Tune, contentDescription = stringResource(R.string.tab_params)) },
+                    label = { Text(stringResource(R.string.tab_params)) },
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { if (!state.exporting) viewModel.export() },
-                    icon = { Icon(Icons.Outlined.IosShare, contentDescription = "Export") },
-                    label = { Text("Export") },
+                    icon = { Icon(Icons.Outlined.IosShare, contentDescription = stringResource(R.string.tab_export)) },
+                    label = { Text(stringResource(R.string.tab_export)) },
                 )
             }
         },

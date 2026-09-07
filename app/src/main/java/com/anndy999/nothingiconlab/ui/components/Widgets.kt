@@ -19,9 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.anndy999.nothingiconlab.R
 import com.anndy999.nothingiconlab.data.IconSource
 import com.anndy999.nothingiconlab.ui.SourceFilter
 
@@ -47,7 +49,7 @@ fun BitmapIcon(bitmap: Bitmap?, size: Dp, modifier: Modifier = Modifier) {
 
 @Composable
 fun SourceChip(source: IconSource?) {
-    val label = source?.shortLabel ?: "..."
+    val label = source?.let { stringResource(it.shortLabelRes) } ?: "…"
     FilterChip(
         selected = false,
         onClick = {},
@@ -67,11 +69,11 @@ fun FilterRow(
     onSelect: (SourceFilter) -> Unit,
 ) {
     val items = listOf(
-        SourceFilter.ALL to "All",
-        SourceFilter.NATIVE to "Native",
-        SourceFilter.FORCED to "Forced",
-        SourceFilter.FALLBACK to "Fallback",
-        SourceFilter.BAD to "Bad",
+        SourceFilter.ALL to stringResource(R.string.filter_all),
+        SourceFilter.NATIVE to stringResource(R.string.filter_native),
+        SourceFilter.FORCED to stringResource(R.string.filter_forced),
+        SourceFilter.FALLBACK to stringResource(R.string.filter_fallback),
+        SourceFilter.BAD to stringResource(R.string.filter_bad),
     )
     FlowRow {
         items.forEach { (value, label) ->
