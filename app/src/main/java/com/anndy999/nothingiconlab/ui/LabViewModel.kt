@@ -15,6 +15,7 @@ import com.anndy999.nothingiconlab.data.LaunchedApp
 import com.anndy999.nothingiconlab.data.LauncherAppScanner
 import com.anndy999.nothingiconlab.data.ParamsStore
 import com.anndy999.nothingiconlab.data.PipelineResult
+import com.anndy999.nothingiconlab.data.VerifyApps
 import com.anndy999.nothingiconlab.export.TestPackExporter
 import com.anndy999.nothingiconlab.render.NothingRenderParams
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +30,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 enum class LabTab { GRID, LIST, PARAMS }
-enum class SourceFilter { ALL, NATIVE, FORCED, FALLBACK, BAD }
+enum class SourceFilter { ALL, NATIVE, FORCED, FALLBACK, BAD, VERIFY }
 
 data class LabUiState(
     val loading: Boolean = true,
@@ -46,7 +47,7 @@ data class LabUiState(
     val previewCache: Map<String, CachedPreview> = emptyMap(),
     val bad: Set<String> = emptySet(),
     val message: String? = null,
-    val darkPreview: Boolean = true,
+    val darkPreview: Boolean = false,
 )
 
 data class CachedPreview(
@@ -141,6 +142,7 @@ class LabViewModel(application: Application) : AndroidViewModel(application) {
                 SourceFilter.FORCED -> source == IconSource.FORCED_MONO
                 SourceFilter.FALLBACK -> source == IconSource.FALLBACK
                 SourceFilter.BAD -> app.componentFlattened in s.bad
+                SourceFilter.VERIFY -> VerifyApps.matches(app)
             }
             matchesQuery && matchesFilter
         }
@@ -168,7 +170,9 @@ class LabViewModel(application: Application) : AndroidViewModel(application) {
                     app = app,
                     params = s.params,
                     dark = s.darkPreview,
-                    outputSize = 512,
+                    outputSize = NothingRenderParams.DETAIL_SIZE,
+                    forcedWorkSize = NothingRenderParams.FORCED_WORK_SIZE,
+                    layerSize = NothingRenderParams.DETAIL_SIZE,
                 )
             }
             _state.update { it.copy(selectedResult = result) }
@@ -182,7 +186,9 @@ class LabViewModel(application: Application) : AndroidViewModel(application) {
             app = app,
             params = s.params,
             dark = s.darkPreview,
-            outputSize = 128,
+            outputSize = NothingRenderParams.PREVIEW_SIZE,
+            forcedWorkSize = NothingRenderParams.PREVIEW_FORCED_WORK_SIZE,
+            layerSize = NothingRenderParams.PREVIEW_SIZE,
         )
         val result = processed.nothingResult ?: return null
         return CachedPreview(
