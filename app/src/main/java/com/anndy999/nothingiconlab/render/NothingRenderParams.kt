@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
  * - adaptive extra inset 0.25 from AdaptiveIconDrawable.getExtraInsetFraction()
  * - themed inset 1/6 from n3/a.<clinit> extra/(1+2*extra)
  *
- * Display colors are user-requested: white circular plate, black glyph.
+ * Colors are the only Nada-inspired choice: white circular plate, black glyph.
  */
 @Serializable
 data class NothingRenderParams(
@@ -47,9 +47,10 @@ data class NothingRenderParams(
         const val DEFAULT_ADAPTIVE_INSET: Float = 0.25f
 
         /**
-         * n3/a static inset: extra / (1 + 2 * extra) = 0.25 / 1.5 = 1/6.
-         * Used by ClippedMonoDrawable / InsetDrawable, not as a second crop
-         * stacked on top of [DEFAULT_LOGO_SCALE].
+         * n3/a.a = extra / (1 + 2 * extra) = 0.25 / 1.5 = 1/6.
+         * Used by n3/a.b's outer InsetDrawable wrap, not as a second crop
+         * stacked on top of [DEFAULT_LOGO_SCALE]. ClippedMonoDrawable itself
+         * is constructed with -getExtraInsetFraction() = -0.25.
          */
         const val DEFAULT_MONOCHROME_INSET: Float = 1f / 6f
 

@@ -11,11 +11,15 @@ import com.anndy999.nothingiconlab.LabLog
 import com.anndy999.nothingiconlab.data.IconSource
 
 /**
- * Reconstructs Nothing ThemedIconDrawable composition:
- * circular plate + centered mono glyph scaled by 0.3888889.
+ * Reconstructs Nothing ThemedIconDrawable composition.
  *
- * Not a copy of Nothing closed source. Insets are not stacked as a second
- * crop on top of logoScale (that was the v0.1.1/v0.1.2 geometry mistake).
+ * On device, ThemedIconDrawable.drawInternal draws mBgBitmap then mMonoIcon
+ * both full-bleed into the icon bounds, with SRC_IN colorBg / colorFg.
+ * 0.3888889 is already inside mMonoIcon (n3/a.g / n3/a.h / o3/a.m).
+ * This lab keeps the glyph unscaled and applies logoScale at compose time
+ * so the Params page can still tune it. Same visual, not a second crop.
+ *
+ * Nada is not used for geometry.
  */
 object NothingRenderer {
 
