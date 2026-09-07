@@ -79,15 +79,10 @@ jobs:
           if [[ "$TAG_NAME" == v* ]]; then
             VER="${TAG_NAME#v}"
           else
-            VER=$(python3 - <<'PY'
-          import re
-          text = open("app/build.gradle.kts", encoding="utf-8").read()
-          major = int(re.search(r"versionMajor\s*=\s*(\d+)", text).group(1))
-          minor = int(re.search(r"versionMinor\s*=\s*(\d+)", text).group(1))
-          patch = int(re.search(r"versionPatch\s*=\s*(\d+)", text).group(1))
-          print(f"{major}.{minor}.{patch}")
-          PY
-          )
+            MAJOR=$(sed -n 's/.*versionMajor = \([0-9][0-9]*\).*/\1/p' app/build.gradle.kts | head -1)
+            MINOR=$(sed -n 's/.*versionMinor = \([0-9][0-9]*\).*/\1/p' app/build.gradle.kts | head -1)
+            PATCH=$(sed -n 's/.*versionPatch = \([0-9][0-9]*\).*/\1/p' app/build.gradle.kts | head -1)
+            VER="${MAJOR}.${MINOR}.${PATCH}"
           fi
           NAME="Nothing-Icon-Lab-v${VER}.apk"
           cp "$SRC" "dist/$NAME"
