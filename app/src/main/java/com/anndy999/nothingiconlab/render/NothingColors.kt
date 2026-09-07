@@ -3,7 +3,7 @@ package com.anndy999.nothingiconlab.render
 import android.content.Context
 
 /**
- * Default look is white plate / black glyph (Nada colors inverted).
+ * Default look is a white circular plate and a black glyph.
  * Optional path still resolves Nothing's system_neutral1_50 / 900 when
  * [NothingRenderParams.useSystemNeutralColors] is on.
  */

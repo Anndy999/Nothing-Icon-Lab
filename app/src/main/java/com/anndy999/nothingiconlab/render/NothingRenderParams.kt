@@ -5,62 +5,65 @@ import kotlinx.serialization.Serializable
 /**
  * Tunable plate + glyph parameters.
  *
- * Geometry is measured from Nada 无题 (com.panpandada.nada.pay 16.0)
- * 288px assets — not a copy of that pack. Nada itself is black-plate /
- * white-glyph; this app defaults to the inverse the user asked for:
- * - circular off-white plate #F1F1F1, charcoal glyph #1B1B1B
- * - cropped glyph bbox ≈ 106/288 ≈ 0.368 of the canvas
- * - appfilter scale 0.44 is only for unthemed (uncropped) fallbacks
+ * Geometry follows Nothing Launcher 2.5.9 / AOSP Launcher3, not Nada:
+ * - logoScale 0.3888889f is a const in n3/a.g, n3/a.h, o3/a.m (classes2.dex)
+ * - cropToContent is off so that scale applies to the full drawable
+ * - adaptive extra inset 0.25 from AdaptiveIconDrawable.getExtraInsetFraction()
+ * - themed inset 1/6 from n3/a.<clinit> extra/(1+2*extra)
  *
- * Nothing Launcher 2.5.9 bytecode still documents 0.3888889; it is no longer
- * the app default because stacking it with adaptive+mono insets made glyphs tiny.
+ * Display colors are user-requested: white circular plate, black glyph.
  */
 @Serializable
 data class NothingRenderParams(
     val logoScale: Float = DEFAULT_LOGO_SCALE,
     val foregroundScale: Float = 1.0f,
-    val adaptiveIconInset: Float = 0f,
-    val monochromeInset: Float = 0f,
+    val adaptiveIconInset: Float = DEFAULT_ADAPTIVE_INSET,
+    val monochromeInset: Float = DEFAULT_MONOCHROME_INSET,
     val backgroundSize: Float = 1.0f,
     val threshold: Float = 0.0f,
     val contrast: Float = 1.0f,
-    val alphaThreshold: Float = 0.04f,
+    val alphaThreshold: Float = 0.0f,
     val invert: Boolean = false,
     val autoInvert: Boolean = true,
     val forceMonochrome: Boolean = false,
     val preferNativeMonochrome: Boolean = true,
-    val cropToContent: Boolean = true,
+    val cropToContent: Boolean = false,
     val followSystemDark: Boolean = true,
     val previewDark: Boolean = false,
     val useSystemNeutralColors: Boolean = false,
-    val lightBackground: Int = NADA_GLYPH,
-    val lightForeground: Int = NADA_PLATE,
-    val darkBackground: Int = NADA_PLATE,
-    val darkForeground: Int = NADA_GLYPH,
-    val outputSize: Int = 192,
+    val lightBackground: Int = WHITE_PLATE,
+    val lightForeground: Int = BLACK_GLYPH,
+    val darkBackground: Int = BLACK_GLYPH,
+    val darkForeground: Int = WHITE_PLATE,
+    val outputSize: Int = EXPORT_SIZE,
 ) {
     fun effectiveLogoScale(): Float = (logoScale * foregroundScale).coerceIn(0.05f, 1.5f)
 
     companion object {
-        /** Cropped glyph bbox / 288px canvas, median of Nada 无题 adapted icons. */
-        const val DEFAULT_LOGO_SCALE: Float = 106f / 288f
+        /** IEEE-754 0.3888889f in Nothing Launcher 2.5.9 n3/a and o3/a. */
+        const val DEFAULT_LOGO_SCALE: Float = 0.3888889f
 
-        /** Nada appfilter scale for unthemed full icons (not used once cropToContent is on). */
-        const val NADA_UNTHEMED_SCALE: Float = 0.44f
+        /** AdaptiveIconDrawable.getExtraInsetFraction(). */
+        const val DEFAULT_ADAPTIVE_INSET: Float = 0.25f
 
-        /** 7/18. Verified in Nothing Launcher 2.5.9 classes2.dex. */
-        const val NOTHING_LOGO_SCALE: Float = 0.3888889f
+        /**
+         * n3/a static inset: extra / (1 + 2 * extra) = 0.25 / 1.5 = 1/6.
+         * Used by ClippedMonoDrawable / InsetDrawable, not as a second crop
+         * stacked on top of [DEFAULT_LOGO_SCALE].
+         */
+        const val DEFAULT_MONOCHROME_INSET: Float = 1f / 6f
 
-        /** Plate / glyph measured from Nada 288px assets (rgb 27 / 241). */
-        const val NADA_PLATE: Int = 0xFF1B1B1B.toInt()
-        const val NADA_GLYPH: Int = 0xFFF1F1F1.toInt()
+        const val WHITE_PLATE: Int = 0xFFFFFFFF.toInt()
+        const val BLACK_GLYPH: Int = 0xFF000000.toInt()
 
-        /** Framework defaults for system_neutral1_50 / 900. */
         const val NEUTRAL_50: Int = 0xFFF1F0F7.toInt()
         const val NEUTRAL_900: Int = 0xFF1A1B20.toInt()
 
-        const val DEFAULT_ADAPTIVE_INSET: Float = 0.25f
-        const val DEFAULT_MONOCHROME_INSET: Float = 1f / 6f
+        const val PREVIEW_SIZE: Int = 128
+        const val DETAIL_SIZE: Int = 512
+        const val EXPORT_SIZE: Int = 512
+        const val FORCED_WORK_SIZE: Int = 576
+        const val PREVIEW_FORCED_WORK_SIZE: Int = 256
 
         fun nothingDefault(): NothingRenderParams = NothingRenderParams()
     }
