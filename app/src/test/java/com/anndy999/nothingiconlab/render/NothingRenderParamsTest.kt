@@ -8,18 +8,19 @@ import kotlin.math.abs
 
 class NothingRenderParamsTest {
     @Test
-    fun defaultLogoScaleMatchesNothingLauncherBytecode() {
+    fun defaultMatchesNadaBlackPlateWhiteGlyph() {
         val params = NothingRenderParams.nothingDefault()
-        assertTrue(abs(params.logoScale - 0.3888889f) < 1e-6)
-        assertEquals(0.25f, params.adaptiveIconInset)
-        assertEquals(1f / 6f, params.monochromeInset)
+        assertTrue(abs(params.logoScale - (106f / 288f)) < 1e-6)
+        assertEquals(0f, params.adaptiveIconInset)
+        assertEquals(0f, params.monochromeInset)
         assertTrue(params.preferNativeMonochrome)
-        assertFalse(params.cropToContent)
-        assertTrue(params.useSystemNeutralColors)
-        assertEquals(NothingRenderParams.NEUTRAL_50, params.lightBackground)
-        assertEquals(NothingRenderParams.NEUTRAL_900, params.lightForeground)
-        assertEquals(NothingRenderParams.NEUTRAL_900, params.darkBackground)
-        assertEquals(NothingRenderParams.NEUTRAL_50, params.darkForeground)
+        assertTrue(params.cropToContent)
+        assertFalse(params.useSystemNeutralColors)
+        assertTrue(params.previewDark)
+        assertEquals(NothingRenderParams.NADA_PLATE, params.darkBackground)
+        assertEquals(NothingRenderParams.NADA_GLYPH, params.darkForeground)
+        assertEquals(NothingRenderParams.NADA_GLYPH, params.lightBackground)
+        assertEquals(NothingRenderParams.NADA_PLATE, params.lightForeground)
     }
 
     @Test

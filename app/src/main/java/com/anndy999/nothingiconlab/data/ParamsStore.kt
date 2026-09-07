@@ -37,7 +37,7 @@ class ParamsStore(context: Context) {
 
     companion object {
         private const val PREFS = "nothing_icon_lab"
-        private const val KEY_PARAMS = "params_json"
+        private const val KEY_PARAMS = "params_json_v2"
         private const val KEY_BAD = "bad_components"
     }
 }
