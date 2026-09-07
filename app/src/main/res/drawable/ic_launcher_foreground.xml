@@ -4,10 +4,17 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Integer-snapped block N inside the 18–90 adaptive safe zone. -->
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M34,32h8l16,28V32h8v44h-8L42,48v28h-8z" />
+        android:pathData="M30,26h12v56H30z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M66,26h12v56H66z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M42,26h14L78,82H64z" />
     <path
         android:fillColor="#FFD71921"
-        android:pathData="M70,70a4,4 0 1,0 0.01,0z" />
+        android:pathData="M68,68h12v12H68z" />
 </vector>
