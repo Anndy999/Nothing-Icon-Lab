@@ -8,19 +8,23 @@ import kotlin.math.abs
 
 class NothingRenderParamsTest {
     @Test
-    fun defaultIsWhitePlateBlackGlyph() {
+    fun defaultGeometryIsNothingNotNada() {
         val params = NothingRenderParams.nothingDefault()
-        assertTrue(abs(params.logoScale - (106f / 288f)) < 1e-6)
-        assertEquals(0f, params.adaptiveIconInset)
-        assertEquals(0f, params.monochromeInset)
+        assertTrue(abs(params.logoScale - 0.3888889f) < 1e-6)
+        assertEquals(0.25f, params.adaptiveIconInset)
+        assertEquals(1f / 6f, params.monochromeInset)
+        assertFalse(params.cropToContent)
+        assertEquals(0f, params.alphaThreshold)
         assertTrue(params.preferNativeMonochrome)
-        assertTrue(params.cropToContent)
         assertFalse(params.useSystemNeutralColors)
         assertFalse(params.previewDark)
-        assertEquals(NothingRenderParams.NADA_GLYPH, params.lightBackground)
-        assertEquals(NothingRenderParams.NADA_PLATE, params.lightForeground)
-        assertEquals(NothingRenderParams.NADA_PLATE, params.darkBackground)
-        assertEquals(NothingRenderParams.NADA_GLYPH, params.darkForeground)
+        assertEquals(NothingRenderParams.WHITE_PLATE, params.lightBackground)
+        assertEquals(NothingRenderParams.BLACK_GLYPH, params.lightForeground)
+        assertEquals(NothingRenderParams.BLACK_GLYPH, params.darkBackground)
+        assertEquals(NothingRenderParams.WHITE_PLATE, params.darkForeground)
+        assertEquals(512, params.outputSize)
+        assertEquals(576, NothingRenderParams.FORCED_WORK_SIZE)
+        assertEquals(128, NothingRenderParams.PREVIEW_SIZE)
     }
 
     @Test

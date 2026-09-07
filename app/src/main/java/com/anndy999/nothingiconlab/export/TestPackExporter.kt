@@ -34,7 +34,16 @@ object TestPackExporter {
         ZipOutputStream(BufferedOutputStream(outFile.outputStream())).use { zip ->
             apps.forEachIndexed { index, app ->
                 onProgress(index + 1, apps.size)
-                val processed = IconPipeline.process(context, app, params, dark, outputSize = params.outputSize)
+                val exportSize = maxOf(params.outputSize, NothingRenderParams.EXPORT_SIZE)
+                val processed = IconPipeline.process(
+                    context = context,
+                    app = app,
+                    params = params,
+                    dark = dark,
+                    outputSize = exportSize,
+                    forcedWorkSize = NothingRenderParams.FORCED_WORK_SIZE,
+                    layerSize = exportSize,
+                )
                 val drawable = DrawableName.fromComponent(app.packageName, app.activityName)
                 filterItems += AppFilterItem(app.packageName, app.activityName, drawable)
                 appsTxt.appendLine(

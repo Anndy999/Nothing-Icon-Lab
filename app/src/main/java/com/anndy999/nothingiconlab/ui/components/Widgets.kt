@@ -74,6 +74,7 @@ fun FilterRow(
         SourceFilter.FORCED to stringResource(R.string.filter_forced),
         SourceFilter.FALLBACK to stringResource(R.string.filter_fallback),
         SourceFilter.BAD to stringResource(R.string.filter_bad),
+        SourceFilter.VERIFY to stringResource(R.string.filter_verify),
     )
     FlowRow {
         items.forEach { (value, label) ->
