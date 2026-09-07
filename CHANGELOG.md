@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.1.1
+
+### Added
+
+- 界面默认中文（系统语言为英语时使用 `values-en`）。
+- 参数页增加「使用系统中性色」开关，对应 Nothing 的 `system_neutral1_50` / `900`。
+
+### Changed
+
+- `logoScale = 0.3888889` 从假设改为 **Nothing Launcher 2.5.9 字节码核实**。
+- 默认 `cropToContent = false`，使 0.3888889 缩放整张 drawable（与 `createIconBitmap` 一致）。
+- 默认底板/字形颜色改为系统中性色（#F1F0F7 / #1A1B20 框架默认值，可随壁纸变化）。
+- 应用图标改为整数对齐的矢量块状 N + 红色方块，并补齐 mdpi–xxxhdpi mipmap。
+- 研究笔记改为已核实结论；仓库不再保留 Nothing 专有 APK。
+
+### Fixed
+
+- 启动器图标发糊：原先前景矢量过细、红色标记只有约 4vp，在桌面密度下几乎糊成一点。
+- 界面文案不再硬编码英文。
+
+### Known Issues
+
+- GitHub Release 签名 secrets 仍未配置；APK 在配置前仍是 debug 签名。
+- 尚无 Theme Park APK 生成器（计划 v0.3 / v0.4）。
+- 照片/多色图标的强制单色质量较差（预期行为；覆盖规则在 v0.2）。
+- 改参数会重绘整个网格，应用很多时可能卡顿。
+- 需要 `QUERY_ALL_PACKAGES`；不以 Play 上架为目标。
+
 ## v0.1.0
 
 ### Added

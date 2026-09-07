@@ -1,62 +1,63 @@
-# Nothing Icon Lab
+# Nothing 图标实验室
 
-Research, preview, tune, and export **Nothing-style** monochrome icons — without replacing Samsung One UI Home.
+研究、预览、调节并导出 **Nothing 风格** 单色图标 — 不替换三星 One UI 桌面。
 
-Nothing Icon Lab is a sideload Android 13+ tool. It is **not** a launcher and it does **not** modify Theme Park, One UI Home, or any system app.
+这是一个侧载的 Android 13+ 工具。它 **不是** 启动器，也 **不会** 修改 Theme Park、One UI Home 或任何系统应用。
 
-**Nothing Icon Lab is not affiliated with Nothing Technology Limited.**
-**Nothing and Nothing OS are trademarks of their respective owner.**
+**Nothing Icon Lab 与 Nothing Technology Limited 没有任何关联。**
+**Nothing 与 Nothing OS 是其权利人的商标。**
 
-## Why this exists
+## 为什么做这个
 
-The usual Theme Park loop is too slow:
+Theme Park 的循环太慢：
 
-> tweak a few icons → compile APK → install → Theme Park → apply → screenshot → tweak again
+> 改几个图标 → 编译 APK → 安装 → Theme Park → 应用 → 截图 → 再改
 
-This app moves that loop **inside the device**:
+这个应用把循环放到 **设备内部**：
 
-1. Scan every launchable app
-2. Read the **real** APK icon (`packageName` + launcher Activity + Adaptive Icon + `monochrome`)
-3. Prefer official Android 13+ monochrome; otherwise run AOSP `MonochromeIconFactory`
-4. Apply a reconstructed Nothing plate (circular background + centered glyph)
-5. Live-tune parameters and see the whole grid update
-6. Export a Theme Park–oriented test pack (`appfilter.xml` + PNGs)
+1. 扫描所有可启动应用
+2. 读取 **真实** APK 图标（`packageName` + 启动 Activity + Adaptive Icon + `monochrome`）
+3. 优先官方 Android 13+ 单色；否则走 AOSP `MonochromeIconFactory`
+4. 套用还原的 Nothing 底板（圆形背景 + 居中字形）
+5. 实时调参，网格立刻更新
+6. 导出面向 Theme Park 的测试包（`appfilter.xml` + PNG）
 
-The visual reference is **Nothing Launcher 2.5.9**, not Lawnicons. Lawnicons is used only as infrastructure (scan / Adaptive Icon / appfilter ideas).
+视觉参考是 **Nothing Launcher 2.5.9**，不是 Lawnicons。Lawnicons 只当基础设施（扫描 / Adaptive Icon / appfilter 思路）。
 
-## Current status
+## 当前状态
 
-**v0.1.0** — first lab build.
+**v0.1.1** — 中文界面；`logoScale` 与系统中性色已按 Launcher 2.5.9 字节码核实；启动器图标已重做。
 
-| Feature | v0.1 |
+| 功能 | 状态 |
 | --- | --- |
-| Scan launchable apps | yes |
-| Native monochrome | yes |
-| Forced monochrome (AOSP) | yes |
-| Nothing-style render + live params | yes |
-| Grid / list / detail | yes |
-| Export ZIP | yes |
-| Per-app override | v0.2 |
-| Theme Park project | v0.3 |
-| Auto Theme Park APK | v0.4 |
+| 扫描可启动应用 | 有 |
+| 官方单色 | 有 |
+| 强制单色（AOSP） | 有 |
+| Nothing 风格渲染 + 实时参数 | 有 |
+| 网格 / 列表 / 详情 | 有 |
+| 导出 ZIP | 有 |
+| 中文界面 | 有（英语走 `values-en`） |
+| 按应用覆盖 | v0.2 |
+| Theme Park 工程 | v0.3 |
+| 自动 Theme Park APK | v0.4 |
 
-## Install
+## 安装
 
-1. Open the [GitHub Releases](https://github.com/Anndy999/Nothing-Icon-Lab/releases) page.
-2. Download `Nothing-Icon-Lab-vX.Y.Z.apk`.
-3. Sideload. Allow `QUERY_ALL_PACKAGES` so the scanner can see every app.
+1. 打开 [GitHub Releases](https://github.com/Anndy999/Nothing-Icon-Lab/releases)。
+2. 下载 `Nothing-Icon-Lab-vX.Y.Z.apk`。
+3. 侧载。允许 `QUERY_ALL_PACKAGES`，扫描器才能看到全部应用。
 
-Until release-signing secrets are configured, APKs may be **debug-signed**. That is called out in the release notes. Do not treat those as a stable upgrade signature.
+在配置发布签名 secrets 之前，APK 可能是 **debug 签名**。发布说明里会写明。不要把它当成稳定升级签名。
 
-## Supported Android versions
+## 支持的 Android 版本
 
-- Minimum: **Android 13 (API 33)**
-- Target: **Android 15 (API 35)**
-- Reason: `AdaptiveIconDrawable.monochrome` and themed-icon research
+- 最低：**Android 13 (API 33)**
+- 目标：**Android 15 (API 35)**
+- 原因：`AdaptiveIconDrawable.monochrome` 与主题图标研究
 
-## How export works
+## 导出格式
 
-In the app: **Export** → share `NothingIconLab-export.zip`.
+应用内点 **导出**，分享 `NothingIconLab-export.zip`。
 
 ```
 NothingIconLab-export.zip
@@ -69,15 +70,15 @@ NothingIconLab-export.zip
     └── forced_monochrome/
 ```
 
-`appfilter.xml` uses:
+`appfilter.xml` 使用：
 
 ```xml
 <item component="ComponentInfo{package/activity}" drawable="name" />
 ```
 
-This is the mapping Theme Park / third-party icon packs expect. v0.1 does **not** yet emit a full Theme Park APK.
+这是 Theme Park / 第三方图标包需要的映射。v0.1 还 **不会** 生成完整 Theme Park APK。
 
-## How to build
+## 如何构建
 
 ```bash
 export ANDROID_HOME=/path/to/Android/Sdk
@@ -85,44 +86,45 @@ export ANDROID_HOME=/path/to/Android/Sdk
 ./gradlew assembleRelease
 ```
 
-The APK lands under `app/build/outputs/apk/`.
+APK 在 `app/build/outputs/apk/`。
 
 ### GitHub Actions
 
-Push to `main` or push a tag `v*`:
+推送到 `main` 或推送 `v*` 标签：
 
-- Checkout, Java 17, Gradle cache
-- Unit tests + lint
+- Checkout、Java 17、Gradle cache
+- 单元测试 + lint
 - Release APK
-- Artifact upload
-- On `v*` tags: GitHub Release + APK upload
+- 上传 artifact
+- `v*` 标签：GitHub Release + 上传 APK
 
-### Release signing secrets (not in the repo)
+### 发布签名 secrets（不进仓库）
 
-| Secret | Purpose |
+| Secret | 用途 |
 | --- | --- |
-| `ANDROID_KEYSTORE_BASE64` | Base64-encoded `.jks` / `.keystore` |
-| `ANDROID_KEYSTORE_PASSWORD` | Keystore password |
-| `ANDROID_KEY_ALIAS` | Key alias |
-| `ANDROID_KEY_PASSWORD` | Key password |
+| `ANDROID_KEYSTORE_BASE64` | Base64 编码的 `.jks` / `.keystore` |
+| `ANDROID_KEYSTORE_PASSWORD` | Keystore 密码 |
+| `ANDROID_KEY_ALIAS` | 密钥别名 |
+| `ANDROID_KEY_PASSWORD` | 密钥密码 |
 
-If these are missing, CI still builds and still publishes a tag Release, but the APK is **debug-signed**. Configure the four secrets once and every later version can overwrite-upgrade on the phone.
+缺失时 CI 仍会构建并在打标签时发布 Release，但 APK 是 **debug 签名**。配置一次这四个 secrets 后，后续版本才能在手机上覆盖安装。
 
-## Roadmap
+## 路线图
 
-- **v0.1** scan, preview, native/forced mono, Nothing render, live params, ZIP export
-- **v0.2** bad-result workflow, per-app overrides (e.g. Chrome scale = 0.39)
-- **v0.3** Samsung Theme Park Icon Pack project output
-- **v0.4** automatic APK generation, then watch for newly installed apps
+- **v0.1** 扫描、预览、官方/强制单色、Nothing 渲染、实时参数、ZIP 导出
+- **v0.2** 较差结果工作流、按应用覆盖（例如 Chrome scale = 0.39）
+- **v0.3** 三星 Theme Park 图标包工程输出
+- **v0.4** 自动生成 APK，并监视新安装的应用
 
-## Development principles
+## 开发原则
 
-- Read Chrome from the Chrome APK. Never replace it with a downloaded logo.
-- Prefer AOSP / Apache 2.0 / Lawnicons infrastructure. Do not copy Nothing closed source.
-- Keep the architecture small and debuggable. Log `IconSource` and renderer parameters.
-- Do not root, do not patch One UI Home, do not patch Theme Park.
+- 从 Chrome 的 APK 读 Chrome 图标。不要用网上下载的 Logo 替换。
+- 优先 AOSP / Apache 2.0 / Lawnicons 基础设施。不要复制 Nothing 闭源。
+- 架构保持小、可调试。记录 `IconSource` 和渲染参数。
+- 不 root、不改 One UI Home、不改 Theme Park。
+- 不把 Nothing 专有 APK 提交进仓库。
 
 ## License
 
-Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
-Research notes: [docs/RESEARCH.md](docs/RESEARCH.md).
+Apache License 2.0。见 [LICENSE](LICENSE) 和 [NOTICE](NOTICE)。
+研究笔记：[docs/RESEARCH.md](docs/RESEARCH.md)。
