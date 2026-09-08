@@ -12,7 +12,16 @@ class DrawableNameTest {
             "com.android.chrome",
             "com.google.android.apps.chrome.Main",
         )
-        assertEquals("com_android_chrome_main", name)
+        assertEquals("chrome", name)
+    }
+
+    @Test
+    fun wechatUsesShortName() {
+        val name = DrawableName.fromComponent(
+            "com.tencent.mm",
+            "com.tencent.mm.ui.LauncherUI",
+        )
+        assertEquals("wechat", name)
     }
 
     @Test
