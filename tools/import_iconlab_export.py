@@ -1,37 +1,19 @@
 #!/usr/bin/env python3
-"""Import a NothingIconLab-export.zip into iconpack resources."""
+"""Build iconpack resources from phone scan + curated-first icons.
+
+Priority:
+  1. iconpack/curated/png/<drawable>.png     CURATED (never overwritten)
+  2. ZIP icons/final/<drawable>.png          GENERATED
+  3. ZIP icons/original or similar           FALLBACK (only if needed)
+"""
 from __future__ import annotations
 
-import re
+import json
 import sys
 import zipfile
 from pathlib import Path
 
-PACKAGE_DRAWABLE = {
-    "com.android.chrome": "chrome",
-    "com.google.android.googlequicksearchbox": "google",
-    "com.google.android.gm": "gmail",
-    "com.google.android.youtube": "youtube",
-    "com.tencent.mm": "wechat",
-    "com.openai.chatgpt": "chatgpt",
-    "com.twitter.android": "x",
-    "org.telegram.messenger": "telegram",
-    "org.telegram.messenger.web": "telegram",
-    "app.nixgramx.android": "nixgramx",
-    "ai.x.grok": "grok",
-    "com.ss.android.ugc.aweme": "douyin",
-    "com.appshub.bettbox": "bettbox",
-    "com.anndy999.nothingiconlab": "nothing_icon_lab",
-}
-
-
-def sanitize(raw: str) -> str:
-    s = re.sub(r"[^a-z0-9]+", "_", raw.lower()).strip("_")
-    if not s:
-        s = "unknown"
-    if s[0].isdigit():
-        s = "i_" + s
-    return s[:90]
+from iconpack_names import drawable_for, sanitize
 
 
 def parse_apps(text: str) -> list[dict[str, str]]:
@@ -53,25 +35,43 @@ def parse_apps(text: str) -> list[dict[str, str]]:
     return rows
 
 
-def write_xml(assets: Path, xml_dir: Path, mappings: list[tuple[str, str, str]]) -> None:
+def write_xml(assets: Path, xml_dir: Path, mappings: list[dict]) -> None:
     assets.mkdir(parents=True, exist_ok=True)
     xml_dir.mkdir(parents=True, exist_ok=True)
     filt = ['<?xml version="1.0" encoding="utf-8"?>', "<resources>"]
-    for draw, pkg, act in mappings:
+    for row in mappings:
         filt.append(
-            f'    <item component="ComponentInfo{{{pkg}/{act}}}" drawable="{draw}" />'
+            f'    <item component="ComponentInfo{{{row["package"]}/{row["activity"]}}}" '
+            f'drawable="{row["drawable"]}" />'
         )
     filt.append("</resources>")
     body = "\n".join(filt) + "\n"
     (assets / "appfilter.xml").write_text(body)
     (xml_dir / "appfilter.xml").write_text(body)
-    draws = sorted({m[0] for m in mappings})
+    draws = sorted({row["drawable"] for row in mappings})
     dxml = ['<?xml version="1.0" encoding="utf-8"?>', "<resources>"]
     dxml += [f'    <item drawable="{d}" />' for d in draws]
     dxml.append("</resources>")
     dbody = "\n".join(dxml) + "\n"
     (assets / "drawable.xml").write_text(dbody)
     (xml_dir / "drawable.xml").write_text(dbody)
+
+
+def pick_zip_png(zf: zipfile.ZipFile, names: set[str], draw: str, pkg: str, act: str) -> tuple[bytes | None, str]:
+    old = sanitize(f"{pkg}_{act.rsplit('.', 1)[-1]}")
+    generated = [f"icons/final/{draw}.png", f"icons/final/{old}.png"]
+    generated += [
+        n for n in names if n.startswith("icons/final/") and pkg.replace(".", "_") in n
+    ]
+    for cand in generated:
+        if cand in names:
+            return zf.read(cand), "GENERATED"
+    fallback_prefixes = ("icons/original/", "icons/fallback/", "icons/native_monochrome/")
+    for prefix in fallback_prefixes:
+        for cand in (f"{prefix}{draw}.png", f"{prefix}{old}.png"):
+            if cand in names:
+                return zf.read(cand), "FALLBACK"
+    return None, "MISSING"
 
 
 def main() -> int:
@@ -82,46 +82,65 @@ def main() -> int:
     if not zip_path.is_file():
         print(f"zip not found: {zip_path}")
         return 1
+
     root = Path(__file__).resolve().parents[1]
+    curated_png = root / "iconpack" / "curated" / "png"
     dest = root / "iconpack" / "src" / "main" / "res" / "drawable-nodpi"
     assets = root / "iconpack" / "src" / "main" / "assets"
     xml_dir = root / "iconpack" / "src" / "main" / "res" / "xml"
     dest.mkdir(parents=True, exist_ok=True)
+    curated_png.mkdir(parents=True, exist_ok=True)
 
     zf = zipfile.ZipFile(zip_path)
     names = set(zf.namelist())
     rows = parse_apps(zf.read("apps.txt").decode("utf-8"))
     used: dict[str, str] = {}
-    mappings: list[tuple[str, str, str]] = []
-    missing = 0
+    mappings: list[dict] = []
+    counts = {"CURATED": 0, "GENERATED": 0, "FALLBACK": 0, "MISSING": 0}
+
     for row in rows:
         pkg, act = row["package"], row["activity"]
-        draw = PACKAGE_DRAWABLE.get(pkg)
-        if not draw:
-            draw = sanitize(f"{pkg}_{act.rsplit('.', 1)[-1]}")
-            n = 2
-            base = draw
-            while draw in used and used[draw] != f"{pkg}/{act}":
-                draw = f"{base}_{n}"
-                n += 1
-        used[draw] = f"{pkg}/{act}"
-        old = sanitize(f"{pkg}_{act.rsplit('.', 1)[-1]}")
-        candidates = [f"icons/final/{draw}.png", f"icons/final/{old}.png"]
-        candidates += [
-            n
-            for n in names
-            if n.startswith("icons/final/") and pkg.replace(".", "_") in n
-        ]
-        png = next((c for c in candidates if c in names), None)
-        if png is None:
-            print(f"MISSING {pkg}/{act}")
-            missing += 1
-            continue
-        (dest / f"{draw}.png").write_bytes(zf.read(png))
-        mappings.append((draw, pkg, act))
+        draw = drawable_for(pkg, act, used)
+        curated = curated_png / f"{draw}.png"
+        if curated.is_file():
+            dest.joinpath(f"{draw}.png").write_bytes(curated.read_bytes())
+            source = "CURATED"
+        else:
+            data, source = pick_zip_png(zf, names, draw, pkg, act)
+            if data is None:
+                counts["MISSING"] += 1
+                print(f"MISSING {pkg}/{act} drawable={draw}")
+                continue
+            dest.joinpath(f"{draw}.png").write_bytes(data)
+        counts[source] += 1
+        mappings.append(
+            {
+                "label": row["label"],
+                "package": pkg,
+                "activity": act,
+                "component": f"ComponentInfo{{{pkg}/{act}}}",
+                "drawable": draw,
+                "source": source,
+            }
+        )
+
     write_xml(assets, xml_dir, mappings)
-    print(f"imported {len(mappings)} icons, missing={missing}, dest={dest}")
-    return 0 if mappings and missing == 0 else 1
+    report = {
+        "scanned": len(rows),
+        "written": len(mappings),
+        "counts": counts,
+        "icons": mappings,
+    }
+    report_path = root / "iconpack" / "curated" / "last-import-provenance.json"
+    report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n")
+    print(
+        f"scanned={len(rows)} written={len(mappings)} "
+        f"CURATED={counts['CURATED']} GENERATED={counts['GENERATED']} "
+        f"FALLBACK={counts['FALLBACK']} MISSING={counts['MISSING']}"
+    )
+    print(f"provenance={report_path}")
+    print("curated pngs were not modified")
+    return 0 if mappings and counts["MISSING"] == 0 else 1
 
 
 if __name__ == "__main__":
