@@ -1,8 +1,5 @@
 package com.anndy999.nothingiconlab.data
 
-/**
- * First-pass packages to inspect in the lab. Not an icon source.
- */
 object VerifyApps {
     val PACKAGES: Set<String> = setOf(
         "com.android.chrome",
@@ -16,6 +13,10 @@ object VerifyApps {
         "com.google.android.googlequicksearchbox",
         "com.google.android.gm",
         "com.google.android.youtube",
+        "app.nixgramx.android",
+        "ai.x.grok",
+        "com.appshub.bettbox",
+        "com.anndy999.nothingiconlab",
     )
 
     fun matches(app: LaunchedApp): Boolean = app.packageName in PACKAGES
