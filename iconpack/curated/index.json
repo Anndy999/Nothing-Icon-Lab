@@ -1,1 +1,12 @@
-see-file
+{
+  "version": 1,
+  "origin": "Nada_adapted-aligned-debugSigned.apk",
+  "scanned_phone_apps": 122,
+  "curated_matched": 119,
+  "unmapped": [
+    "com.candybar.dev",
+    "com.anndy999.nada.icons",
+    "com.clover.daysmatter"
+  ],
+  "note": "Pixels extracted locally at 576px. GitHub connector cannot store the 3.4MB PNG set. Import never overwrites iconpack/curated/png/."
+}
