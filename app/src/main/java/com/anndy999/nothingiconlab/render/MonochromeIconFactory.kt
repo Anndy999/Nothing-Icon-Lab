@@ -20,6 +20,18 @@ import kotlin.math.roundToInt
 /**
  * Kotlin port of AOSP Launcher3 MonochromeIconFactory (Apache 2.0).
  * Original: packages/apps/Launcher3/.../MonochromeIconFactory.java
+ *
+ * Operates at two working sizes (576 export / 256 preview) so the contrast
+ * stretch has enough detail to land between foreground and background.
+ *
+ * Two extraction styles are supported and selected by
+ * [NothingRenderParams.forcedMonoStyle]:
+ * - [ForcedMonoStyle.AOSP]: grayscale, contrast stretch, threshold,
+ *   AOSP edge-average auto-invert. The o3/a.m path documented in
+ *   docs/RESEARCH.md. Default.
+ * - [ForcedMonoStyle.NOTHING_BINARY]: foreground detection via
+ *   bright + low-saturation pixels, falling back to AOSP when no
+ *   foreground is found (monochrome vectors, full-frame photography).
  */
 class MonochromeIconFactory(iconBitmapSize: Int) {
     private val extraFactor = AdaptiveIconDrawable.getExtraInsetFraction()
@@ -49,19 +61,24 @@ class MonochromeIconFactory(iconBitmapSize: Int) {
     fun wrap(
         icon: AdaptiveIconDrawable,
         params: NothingRenderParams,
+        style: ForcedMonoStyle = ForcedMonoStyle.AOSP,
     ): ForcedMonoResult {
         flatCanvas.drawColor(Color.BLACK)
         drawDrawable(icon.background)
         drawDrawable(icon.foreground)
-        val generated = generateMono(params)
+        val generated = generateMono(params, style)
         val clipped = clipToCircle(generated.bitmap)
         return generated.copy(bitmap = clipped)
     }
 
-    fun wrapNonAdaptive(drawable: Drawable, params: NothingRenderParams): ForcedMonoResult {
+    fun wrapNonAdaptive(
+        drawable: Drawable,
+        params: NothingRenderParams,
+        style: ForcedMonoStyle = ForcedMonoStyle.AOSP,
+    ): ForcedMonoResult {
         flatCanvas.drawColor(Color.BLACK)
         drawDrawable(drawable)
-        return generateMono(params)
+        return generateMono(params, style)
     }
 
     private fun drawDrawable(drawable: Drawable?) {
@@ -70,7 +87,47 @@ class MonochromeIconFactory(iconBitmapSize: Int) {
         drawable.draw(flatCanvas)
     }
 
-    private fun generateMono(params: NothingRenderParams): ForcedMonoResult {
+    private fun generateMono(params: NothingRenderParams, style: ForcedMonoStyle): ForcedMonoResult {
+        if (style == ForcedMonoStyle.NOTHING_BINARY) {
+            val binary = extractBinary()
+            if (binary != null) return binary
+            Log.d(LabLog.TAG, "binary path fell back to AOSP (no foreground)")
+        }
+        return extractAosp(params)
+    }
+
+    /**
+     * Bright + low-saturation foreground detection on the same drawn buffer
+     * the AOSP path uses. Returns null when the extraction finds no
+     * foreground; the caller should fall back to [extractAosp].
+     */
+    private fun extractBinary(): ForcedMonoResult? {
+        val extraction = NadaForeground.extract(flatBitmap)
+        if (extraction.foregroundRatio < BINARY_FOREGROUND_FLOOR) return null
+        val argb = Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888)
+        val src = IntArray(bitmapSize * bitmapSize)
+        val maskBytes = ByteArray(bitmapSize * bitmapSize)
+        val buf = ByteBuffer.wrap(maskBytes)
+        buf.rewind()
+        extraction.mask.copyPixelsToBuffer(buf)
+        for (i in src.indices) {
+            val a = maskBytes[i].toInt() and 0xFF
+            src[i] = (a shl 24) or 0x00FFFFFF
+        }
+        argb.setPixels(src, 0, bitmapSize, 0, 0, bitmapSize, bitmapSize)
+        Log.d(
+            LabLog.TAG,
+            "MonochromeIconFactory binary size=$bitmapSize ratio=${extraction.foregroundRatio}",
+        )
+        return ForcedMonoResult(
+            bitmap = argb,
+            minAlpha = 0,
+            maxAlpha = 255,
+            inverted = false,
+        )
+    }
+
+    private fun extractAosp(params: NothingRenderParams): ForcedMonoResult {
         alphaCanvas.drawBitmap(flatBitmap, 0f, 0f, copyPaint)
         val buffer = ByteBuffer.wrap(pixels)
         buffer.rewind()
@@ -127,7 +184,7 @@ class MonochromeIconFactory(iconBitmapSize: Int) {
         argb.setPixels(src, 0, bitmapSize, 0, 0, bitmapSize, bitmapSize)
         Log.d(
             LabLog.TAG,
-            "MonochromeIconFactory size=$bitmapSize min=$minV max=$maxV flip=$flipped contrast=${params.contrast}",
+            "MonochromeIconFactory aosp size=$bitmapSize min=$minV max=$maxV flip=$flipped contrast=${params.contrast}",
         )
         return ForcedMonoResult(
             bitmap = argb,
@@ -156,4 +213,14 @@ class MonochromeIconFactory(iconBitmapSize: Int) {
         val maxAlpha: Int,
         val inverted: Boolean,
     )
+
+    companion object {
+        /**
+         * Minimum fraction of opaque pixels that must be foreground before
+         * the binary path keeps its result. Below this, the path falls
+         * back to AOSP — useful for monochrome vector icons where there
+         * is no separate "white-on-color" foreground.
+         */
+        const val BINARY_FOREGROUND_FLOOR: Float = 0.01f
+    }
 }

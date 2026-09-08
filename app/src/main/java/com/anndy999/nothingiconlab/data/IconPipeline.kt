@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable
 import android.util.Log
 import com.anndy999.nothingiconlab.LabLog
 import com.anndy999.nothingiconlab.render.BitmapUtils
+import com.anndy999.nothingiconlab.render.ForcedMonoStyle
 import com.anndy999.nothingiconlab.render.MonochromeIconFactory
 import com.anndy999.nothingiconlab.render.NothingColors
 import com.anndy999.nothingiconlab.render.NothingRenderParams
@@ -72,7 +73,7 @@ object IconPipeline {
             LabLog.TAG,
             "IconSource: $source package=${app.packageName} component=${app.componentFlattened} " +
                 "native=${layers.hasNativeMonochrome} adaptive=${layers.isAdaptive} " +
-                "output=$outputSize forcedWork=$forcedWorkSize",
+                "forcedStyle=${params.forcedMonoStyle} output=$outputSize forcedWork=$forcedWorkSize",
         )
         return PipelineResult(
             app = app,
@@ -124,10 +125,10 @@ object IconPipeline {
         val factory = MonochromeIconFactory(workSize)
         return try {
             if (adaptive != null) {
-                factory.wrap(adaptive, params)
+                factory.wrap(adaptive, params, params.forcedMonoStyle)
             } else {
                 val original = layers.original ?: return null
-                factory.wrapNonAdaptive(original, params)
+                factory.wrapNonAdaptive(original, params, params.forcedMonoStyle)
             }
         } catch (t: Throwable) {
             Log.w(LabLog.TAG, "forced mono failed for ${layers.app.packageName}", t)
