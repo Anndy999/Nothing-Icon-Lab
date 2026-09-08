@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.anndy999.nothingiconlab.R
+import com.anndy999.nothingiconlab.render.ForcedMonoStyle
 import com.anndy999.nothingiconlab.ui.LabViewModel
 import com.anndy999.nothingiconlab.ui.components.ParamSlider
 
@@ -79,6 +80,11 @@ fun ParamsScreen(
         }
         Toggle(stringResource(R.string.param_crop), p.cropToContent) { v ->
             viewModel.updateParams { it.copy(cropToContent = v) }
+        }
+        Toggle(stringResource(R.string.param_nada_binary), p.forcedMonoStyle == ForcedMonoStyle.NOTHING_BINARY) { v ->
+            viewModel.updateParams {
+                it.copy(forcedMonoStyle = if (v) ForcedMonoStyle.NOTHING_BINARY else ForcedMonoStyle.AOSP)
+            }
         }
         Toggle(stringResource(R.string.param_system_neutral), p.useSystemNeutralColors) { v ->
             viewModel.updateParams { it.copy(useSystemNeutralColors = v) }

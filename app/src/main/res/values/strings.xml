@@ -52,6 +52,7 @@
     <string name="param_force_mono">强制单色</string>
     <string name="param_prefer_native">优先官方单色</string>
     <string name="param_crop">裁切到内容</string>
+    <string name="param_nada_binary">Nada 风格二值化（白 logo 提取）</string>
     <string name="param_dark_preview">深色预览底板</string>
     <string name="param_system_neutral">使用系统中性色</string>
     <string name="reset_defaults">重置为 Nothing 默认</string>

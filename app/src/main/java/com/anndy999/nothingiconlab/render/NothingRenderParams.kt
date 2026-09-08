@@ -12,6 +12,11 @@ import kotlinx.serialization.Serializable
  * - themed inset 1/6 from n3/a.<clinit> extra/(1+2*extra)
  *
  * Colors are the only Nada-inspired choice: white circular plate, black glyph.
+ *
+ * [forcedMonoStyle] switches the FORCED_MONO mask extractor between the AOSP /
+ * Nothing Launcher 2.5.9 chain (default) and an opt-in Nada-style binary
+ * extractor that detects bright + low-saturation pixels. Geometry, plate
+ * color, glyph color, and the rest of the pipeline are unchanged either way.
  */
 @Serializable
 data class NothingRenderParams(
@@ -31,6 +36,7 @@ data class NothingRenderParams(
     val followSystemDark: Boolean = true,
     val previewDark: Boolean = false,
     val useSystemNeutralColors: Boolean = false,
+    val forcedMonoStyle: ForcedMonoStyle = ForcedMonoStyle.AOSP,
     val lightBackground: Int = WHITE_PLATE,
     val lightForeground: Int = BLACK_GLYPH,
     val darkBackground: Int = BLACK_GLYPH,

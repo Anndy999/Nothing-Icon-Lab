@@ -52,6 +52,7 @@
     <string name="param_force_mono">Force Monochrome</string>
     <string name="param_prefer_native">Prefer Native Monochrome</string>
     <string name="param_crop">Crop to content</string>
+    <string name="param_nada_binary">Nada-style binary glyph (white-logo extractor)</string>
     <string name="param_dark_preview">Dark preview plate</string>
     <string name="param_system_neutral">Use system neutrals</string>
     <string name="reset_defaults">Reset to Nothing Default</string>
