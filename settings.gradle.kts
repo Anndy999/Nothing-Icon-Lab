@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "NothingIconLab"
 include(":app")
+include(":iconpack")

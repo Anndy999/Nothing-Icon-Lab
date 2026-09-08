@@ -24,3 +24,7 @@ secrets.env
 /ci-out/
 /release-out/
 /dist/
+NothingIconLab-export.zip
+local-export/
+private/
+/iconpack/build/
